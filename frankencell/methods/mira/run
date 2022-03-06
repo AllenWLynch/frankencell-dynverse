@@ -1,0 +1,144 @@
+#!/Users/alynch/opt/miniconda3/envs/mirarep/bin/python
+
+import anndata
+import scanpy as sc
+import mira
+import numpy as np
+import pandas as pd
+import os
+import dynclipy as dyn
+
+
+def run_pseudotime(data, start_cell, end_cells,
+    threshold = 0.58, n_neighbors = 15, metric = 'manhattan'):
+
+    sc.pp.neighbors(data, use_rep='dimred', metric=metric,
+        n_neighbors=n_neighbors)
+
+    sc.tl.umap(data, min_dist = 0.1, negative_sample_rate=1)
+
+    mira.time.get_connected_components(data, key = 'connectivities')
+    mira.time.get_transport_map(data, diffmap_distances_key='distances',
+                            diffmap_coordinates_key= 'dimred',
+                                start_cell = start_cell, ka = 3)
+    
+    mira.time.get_branch_probabilities(data, 
+                terminal_cells={str(t) : t for t in end_cells}
+        )
+
+    mira.time.get_tree_structure(data, threshold = threshold)
+
+
+def format_results(adata):
+
+    cell_ids = adata.obs_names.values.astype(str)
+    tree_matrix = adata.uns['connectivities_tree'][:-1,:-1]
+    branch_names = adata.uns['tree_state_names'][:-1]
+    branch_tips = adata.obs.groupby('tree_states')['mira_pseudotime'].max()
+
+    branch_start_time = dict(zip(branch_names, tree_matrix.max(0)))
+    branch_end_time = {
+        state : branch_tips[state] if end_time == 0 else end_time
+        for state, end_time in zip(branch_names, tree_matrix.max(-1))
+    }
+
+    def progress(state, time):
+        return (time - branch_start_time[state])/(branch_end_time[state] - branch_start_time[state])
+
+    percentage = np.array(
+        [progress(state, time) 
+         for state, time in zip(adata.obs_vector('tree_states'), adata.obs_vector('mira_pseudotime'))]
+    )
+
+    branch_progressions = pd.DataFrame(
+        {
+            'cell_id' : cell_ids, 
+            'branch_id' : adata.obs.tree_states.values,
+            'percentage' : percentage
+        }
+    )
+
+    branch_names =  adata.uns['tree_state_names'][:-1]
+    branches_df = pd.DataFrame(
+        {'branch_id' : branch_names, 
+        'directed' : [True]*len(branch_names), 
+        'length' : [1]*len(branch_names)}
+    )
+
+    edges = (
+                pd.DataFrame(
+                    tree_matrix, index =branch_names,
+                    columns = branch_names
+                ) > 0
+            ).melt(
+                ignore_index = False, 
+                var_name = 'to', 
+                value_name = 'has_edge'
+            ).reset_index().rename(columns = {'index' : 'from'})
+
+    edges = edges[edges.has_edge].drop(columns = 'has_edge')
+
+    '''cell_info = pd.DataFrame(adata.obsm['branch_probs'], 
+        columns = [str(x) + '_prob' for x in range(adata.obsm['branch_probs'].shape[1])])
+    cell_info['cell_id'] = cell_ids'''
+
+    dimred = pd.DataFrame(adata.obsm['X_umap'])
+    dimred['cell_id'] = cell_ids
+
+    dyn.wrap_data(cell_ids = cell_ids)\
+    .add_dimred(dimred)\
+    .add_grouping(
+        pd.DataFrame(
+            {
+                'group_id' : adata.obs.tree_states.values.astype(str), 
+                'cell_id' : cell_ids
+            }))\
+    .add_branch_trajectory(
+        branch_network = edges,
+        branches = branches_df,
+        branch_progressions = branch_progressions)\
+    .write_output(dataset['output'])
+
+
+def main(
+    adata,
+    start_cell,
+    end_cells,
+    threshold = 0.58,
+    n_neighbors = 15,
+    metric = 'manhattan',
+):
+
+    run_pseudotime(adata, start_cell, end_cells, metric = metric,
+            threshold = threshold, n_neighbors = n_neighbors)
+
+    format_results(adata)
+
+
+
+if __name__ == "__main__":
+
+    dataset = dyn.main(
+        definition_location=\
+            '/Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml')
+
+    params = dataset['parameters']
+    priors = dataset['priors']
+    rna_counts = dataset['counts']
+    N = len(rna_counts)
+
+    dimred = np.array(dataset['priors']['dimred']).reshape((-1, N)).T
+    print(dimred.shape)
+
+    adata = anndata.AnnData(
+        obs = pd.DataFrame(index = rna_counts.index.values), obsm = {'dimred' : dimred}
+    )
+
+    main(
+        adata,
+        priors['start_id'],
+        priors['end_id'],
+        threshold = params['treshold'],
+        n_neighbors = params['n_neighbors'],
+        metric = params['metric']
+    )

@@ -1,0 +1,43 @@
+method:
+  id: mira
+  name: MIRA
+  platform: Python
+
+wrapper:
+  type: branch_trajectory
+  trajectory_types:
+  - bifurcation
+  - multifurcation
+  - tree
+  - acyclic_graph
+  - graph
+  input_required:
+  - counts
+  - start_id
+  - end_id
+  - dimred
+
+parameters:
+- id: treshold
+  type: numeric
+  default: 0.58
+  distribution:
+    type: uniform
+    lower: 0.01
+    upper: 2
+- id: tune
+  type: logical
+  default: TRUE
+- id: n_neighbors
+  type: integer
+  default: 15
+  distribution:
+    type: expuniform
+    lower: 10
+    upper: 50
+- id: metric
+  type: character
+  default: manhattan
+  values:
+  - manhattan
+  - euclidean
