@@ -177,7 +177,7 @@ def simplify_tree(tree, state_compositions, states, progress):
 
 
 def format_dynverse_dataset(*,
-    outfile,
+    output_path,
     cell_ids,
     tree,
     state, 
@@ -225,18 +225,18 @@ def format_dynverse_dataset(*,
             ).add_root([start_cell])\
             .add_cell_waypoints()
 
-    trajectory.write_output(outfile)
+    trajectory.write_output(output_path)
 
-    write_cell_info(outfile, {
+    write_cell_info(output_path, {
         'mix_weight_' + str(i) : mixing_weights[:, i] for i in range(mixing_weights.shape[1])
     })
 
-    logging.info('Wrote dynverse dataset: ' + outfile)
+    logging.info('Wrote dynverse dataset: ' + output_path)
 
     
-def generate_frankentrajectory(
+def generate_frankentrajectory(*,
     state_compositions,
-    outfile,
+    output_path,
     branch_times = None,
     n_cells = 1000,
     gamma = 0.1,
@@ -292,7 +292,7 @@ def generate_frankentrajectory(
         mixing_weights = mixing_weights, 
         percentage = percentage,
         pseudotime = real_time,
-        outfile = outfile,
+        output_path = output_path,
     )
 
 
@@ -300,7 +300,7 @@ def add_arguments(parser):
 
     parser.add_argument('--state-composition','-s', type = float, nargs='+', action='append')
     parser.add_argument('--branch-times', '-b', type = float, nargs='+')
-    parser.add_argument('--outfile', '-o', type = str, required = True)
+    parser.add_argument('--output-path', '-o', type = str, required = True)
     parser.add_argument('--sigmoid-aggression', '-a', type = float, default=5)
     parser.add_argument('--no-sigmoid', action = 'store_const', const = True,
         default = False)

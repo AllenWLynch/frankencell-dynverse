@@ -4,10 +4,25 @@ import sys
 from .generate_cells import generate_frankentrajectory
 from .generate_cells import add_arguments as scaffold_add_arguments
 
+from .mix_cells import mix_frankencells, read_datasets
+from .mix_cells import add_arguments as mixer_add_arguments
+
+from .preprocessing.pca import main as pca_preprocessing
+from .preprocessing.pca import add_arguments as pca_add_arguments
+
+from .preprocessing.lsi import main as lsi_preprocessing
+from .preprocessing.lsi import add_arguments as lsi_add_arguments
+
+from .evaluate_method import main as evaluate
+from .evaluate_method import add_arguments as eval_add_arguments
+
+parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
+subparsers = parser.add_subparsers(help = 'commands')
+
 def generate_scaffold(args):
 
     generate_frankentrajectory(
-        args.state_compositions,
+        args.state_composition,
         args.outfile,
         branch_times = args.branch_times,
         n_cells = args.n_cells,
@@ -16,21 +31,90 @@ def generate_scaffold(args):
         max_width = args.max_width,
         ptime_alpha = args.ptime_alpha,
         ptime_beta = args.ptime_beta,
-        sigmoid_approach = args.sigmoid_approach,
+        sigmoid_approach = not args.no_sigmoid,
         sigmoid_aggression = args.sigmoid_aggression,
         seed = args.seed,
     )
 
-parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
-subparsers = parser.add_subparsers(help = 'commands')
-
-scaffold_subparser = subparsers.add_parser('scaffold')
+scaffold_subparser = subparsers.add_parser('scaffold', fromfile_prefix_chars='@')
 scaffold_add_arguments(scaffold_subparser)
 scaffold_subparser.set_defaults(func = generate_scaffold)
 
+def mix_cells(args):
+
+    mix_frankencells(
+        dynframe = args.scaffold,
+        datasets = read_datasets(args.datasets), 
+        rd_means = args.rd_means, 
+        rd_stds = args.rd_stds, 
+        pure_states = args.pure_states, 
+        feature_types = args.feature_types,
+        max_std = args.max_std, 
+        cell_state_col = args.state_col,
+        counts_layer = args.counts_layer,
+        n_jobs = args.n_jobs,
+        seed = args.seed,
+        output_path = args.outfile, 
+    )
+
+mix_cells_subparser = subparsers.add_parser('mix-cells', fromfile_prefix_chars='@')
+mix_cells_subparser.fromfile_prefix_chars = '@'
+mixer_add_arguments(mix_cells_subparser)
+mix_cells_subparser.set_defaults(func = mix_cells)
+
+def run_pca_preprocess(args):
+
+    pca_preprocessing(
+        args.dynframe,
+        output_path=args.outfile,
+        feature_type=args.feature_type,
+        min_cells=args.min_cells,
+        min_dispersion=args.min_dispersion
+    )
+
+pca_parser = subparsers.add_parser('pca-preprocess')
+pca_add_arguments(pca_parser)
+pca_parser.set_defaults(func = run_pca_preprocess)
+
+
+def run_lsi_preprocess(args):
+
+    lsi_preprocessing(
+        args.dynframe,
+        output_path=args.outfile,
+        feature_type=args.feature_type,
+        min_cells=args.min_cells,
+    )
+
+lsi_parser = subparsers.add_parser('lsi-preprocess')
+lsi_add_arguments(lsi_parser)
+lsi_parser.set_defaults(func = run_lsi_preprocess)
+
+def run_evaluate(args):
+
+    evaluate(
+        goldstandard=args.truth_dataset,
+        test_dataset = args.test_dataset,
+        run_file = args.run_file,
+        definition_file=  args.definition_file,
+        method_output_path = args.method_outfile,
+        results_output_path= args.results_outfile,
+        param_string=args.parameters,
+    )
+
+evaluate_parser = subparsers.add_parser('evaluate')
+eval_add_arguments(evaluate_parser)
+evaluate_parser.set_defaults(func = run_evaluate)
+
+
 def main():
     #____ Execute commands ___
+    import sys
+    print(sys.argv)
+
     args = parser.parse_args()
+
+    print(args)
 
     try:
         args.func #first try accessing the .func attribute, which is empty if user tries ">>>lisa". In this case, don't throw error, display help!

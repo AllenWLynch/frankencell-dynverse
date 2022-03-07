@@ -28,3 +28,10 @@ def main(
         counts = adata.layers['counts'], 
         expression = adata.X.copy()
     )
+
+def add_arguments(parser):
+
+    parser.add_argument('--dynframe', '-i', type = str, required = True)
+    parser.add_argument('--outfile', '-o', type = str, required = True)
+    parser.add_argument('--feature-type', '-f', type = str, default = 'ATAC')
+    parser.add_argument('--min-cells', '-m', type = int, default = 25)

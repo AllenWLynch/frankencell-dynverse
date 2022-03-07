@@ -17,14 +17,18 @@ groups_id <- priors$groups_id
 
 RunTFIDF <- function(
   object,
+  style = 'seurat',
+  scale.factor = 10000,
   ...
 ) {
 
   if (!inherits(x = object, what = "dgCMatrix")) {
     object <- as(object = object, Class = "dgCMatrix")
   }
+  object <- t(object)
   
-  npeaks <- colSums(x = object)
+  npeaks <- colSums(x = object) # per cell, cells are vertical
+
   if (any(npeaks == 0)) {
     warning("Some cells contain 0 total counts")
   }
@@ -36,11 +40,22 @@ RunTFIDF <- function(
       warning("Some features contain 0 total counts")
   }
   idf <- ncol(x = object) / rsums
-  idf <- log(1 + idf)
+  if (style == 'seurat'){
+    idf <- log(1 + idf)
+  }
   
   X <- Diagonal(n = length(x = idf), x = idf) %*% tf
+
+  if (style == 'signac'){
+      X <- log(1 + scale.factor * X)
+  }
+  if (style == 'allen'){
+      scale.factor <- mean(npeaks)
+      print(scale.factor)
+      X <- log(1 + X*scale.factor)
+  }
   
-  return(X)
+  return(t(X))
 }
 
 RunSVD <- function(
@@ -86,7 +101,7 @@ checkpoints <- list(method_afterpreproc = as.numeric(Sys.time()))
 #   Dimensionality reduction                                                ####
 # only do dimred if it is not yet given by prior information
 
-expression <- RunTFIDF(expression)
+expression <- RunTFIDF(expression, style = parameters$style)
 
 if (is.null(dimred)) {
 ndim <- parameters$ndim
@@ -126,7 +141,12 @@ if (ncol(expression) <= ndim) {
     optpoint <- ndim
     }
 
-    rd <- X[, seq_len(optpoint)]
+    if (parameters$skip_first_dim){
+        rd <- X[, 2:optpoint]
+    } else {
+        rd <- X[, 1:optpoint]
+    }
+    
     rownames(rd) <- rownames(expression)
 }
 } else {

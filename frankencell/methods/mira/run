@@ -8,11 +8,76 @@ import pandas as pd
 import os
 import dynclipy as dyn
 
+def centered_boxcox_transform(x, a = 'log'):
+
+    if a == 'log' or a == 0:
+        return np.log(x) - np.log(x).mean(-1, keepdims = True)
+
+    else:
+
+        assert(isinstance(a, float) and a > 0 and a < 1)
+        x = (x**a)/(x**a).mean(-1, keepdims = True)
+        return ( x - 1 )/a
+
+
+def gram_schmidt_basis(n):
+    basis = np.zeros((n, n-1))
+    for j in range(n-1):
+        i = j + 1
+        e = np.array([(1/i)]*i + [-1] +
+                    [0]*(n-i-1))*np.sqrt(i/(i+1))
+        basis[:, j] = e
+    return basis
+
+def get_umap_features(topics, a):
+    g_matrix = gram_schmidt_basis(topics.shape[-1])
+    return centered_boxcox_transform(topics, a = a).dot(g_matrix)
+
+def l2_norm(x):
+    return x / np.linalg.norm(x, axis = 1, keepdims = True)
+
+def process_dimred(data, 
+    are_topic_compositions = True, 
+    use_rep = 'joint',
+    box_cox = 0.5):
+
+    if are_topic_compositions:
+
+        topics = data.obsm['dimred']
+        divider_col = np.argwhere(np.isclose(topics, 0).all(0))[0,0]
+
+        if use_rep == 'joint' or use_rep == 'joint_constrained':
+            if divider_col == 0 or divider_col == topics.shape[-1]-1:
+                raise ValueError('User wanted to use "joint" representation, but only one representation was given')
+
+            rep1, rep2 = topics[:, :divider_col-1], topics[:,divider_col+1:]
+
+            if use_rep == 'joint':
+                data.obsm['embedding_features'] = np.hstack([
+                    get_umap_features(rep1, box_cox), 
+                    get_umap_features(rep2, box_cox)]
+                )
+            else:
+                data.obsm['embedding_features'] = np.hstack([
+                    l2_norm(get_umap_features(rep1, box_cox)), 
+                    l2_norm(get_umap_features(rep2, box_cox))]
+                )
+
+        elif use_rep == 'RNA':
+            data.obsm['embedding_features'] = get_umap_features(topics[:, :divider_col-1], box_cox)
+        elif use_rep == 'ATAC':
+            data.obsm['embedding_features'] = get_umap_features(topics[:, divider_col+1:], box_cox)
+        else:
+            raise ValueError('Representation {} is unknown.'.format(use_rep))
+
+    else:
+        data.obsm['embedding_features'] = data.obsm['dimred']
+
 
 def run_pseudotime(data, start_cell, end_cells,
     threshold = 0.58, n_neighbors = 15, metric = 'manhattan'):
 
-    sc.pp.neighbors(data, use_rep='dimred', metric=metric,
+    sc.pp.neighbors(data, use_rep='embedding_features', metric=metric,
         n_neighbors=n_neighbors)
 
     sc.tl.umap(data, min_dist = 0.1, negative_sample_rate=1)
@@ -78,10 +143,6 @@ def format_results(adata):
 
     edges = edges[edges.has_edge].drop(columns = 'has_edge')
 
-    '''cell_info = pd.DataFrame(adata.obsm['branch_probs'], 
-        columns = [str(x) + '_prob' for x in range(adata.obsm['branch_probs'].shape[1])])
-    cell_info['cell_id'] = cell_ids'''
-
     dimred = pd.DataFrame(adata.obsm['X_umap'])
     dimred['cell_id'] = cell_ids
 
@@ -107,7 +168,15 @@ def main(
     threshold = 0.58,
     n_neighbors = 15,
     metric = 'manhattan',
+    are_topic_compositions = True,
+    box_cox = 0.5,
+    use_rep = 'joint',
 ):
+
+    process_dimred(adata, 
+        are_topic_compositions = are_topic_compositions, 
+        use_rep = use_rep,
+        box_cox = box_cox)
 
     run_pseudotime(adata, start_cell, end_cells, metric = metric,
             threshold = threshold, n_neighbors = n_neighbors)
@@ -115,12 +184,10 @@ def main(
     format_results(adata)
 
 
-
 if __name__ == "__main__":
 
-    dataset = dyn.main(
-        definition_location=\
-            '/Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml')
+    dataset = dyn.main(definition_location=\
+        '/Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml')
 
     params = dataset['parameters']
     priors = dataset['priors']
@@ -140,5 +207,8 @@ if __name__ == "__main__":
         priors['end_id'],
         threshold = params['treshold'],
         n_neighbors = params['n_neighbors'],
-        metric = params['metric']
+        metric = params['metric'],
+        are_topic_compositions = params['are_topic_compositions'],
+        box_cox = params['box_cox'],
+        use_rep = params['use_rep']
     )

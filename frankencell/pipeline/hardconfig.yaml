@@ -1,0 +1,113 @@
+#____GENERAL____
+
+prefix : 'data/hard'
+
+#____SCAFFOLDS____
+default_scaffold_parameters:
+  sigmoid_aggression : 6
+  n_cells : 1000
+  gamma : 0.1
+  max_depth : 3
+  max_width : 2
+  ptime_beta : 0.5
+  ptime_alpha : 1.
+
+scaffolds:
+  scaffold1 : 
+    state_compositions : 
+      - [ 1.0, 0.0, 0.0, 0.0 ]
+      - [ 0.5, 0.35, 0.075, 0.075 ]
+      - [ 0.2, 0.2, 0.3000000000000000, 0.3000000000000000 ]
+      - [ 0.3, 0.625, 0.0375, 0.0375 ]
+      - [ 0.1, 0.0, 0.7, 0.2 ]
+      - [ 0.1, 0.0, 0.2, 0.7 ]
+      - [ 0.1, 0.9, 0.0, 0.0 ]
+      - [ 0.1, 0.9, 0.0, 0.0 ]
+
+#____TESTS____
+
+test_replicates : 3
+
+default_test_parameters:
+  datasets:
+    - ../frankencell/data/benchmark_rna.h5ad
+    #- ../frankencell/data/benchmark_atac.h5ad
+  feature_types:
+    - RNA
+    #- ATAC
+  pure_states: [C, A, B, D]
+  cell_state_col : cell_groups
+  n_jobs : 7
+
+test_conditions:
+  test1 :
+    rd_means : [4000] #, 8000]
+    rd_stds : [0.45] #, 0.3]
+
+#____PREPROCESSING____
+default_preprocessing_parameters: 
+  min_cells : 25
+
+preprocessing:
+  pca :
+    script : pca-preprocess
+    parameters:
+      min_dispersion : 0.7
+      feature_type : RNA
+  lsi :
+    script : lsi-preprocess
+    parameters :
+      feature_type : ATAC
+  mira_monotonic :
+    script : mira-preprocess
+    parameters:
+      use_atac_features : FALSE
+      min_dispersion : 0.7
+      tune : FALSE
+      box_cox : 0.5
+      kl_strategy : monotonic
+  mira_cyclic : 
+    script : mira-preprocess
+    parameters :
+      use_atac_features : FALSE
+      min_dispersion : 0.7
+      tune : FALSE #TRUE
+      kl_strategy : cyclic
+
+#____METHODS____
+default_method_parameters: {}
+
+methods:
+  mira_rna :
+    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/run
+    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml
+    trials:
+      base :
+        preprocessing : mira_rna
+        parameters : ""
+  slingshot_pca : 
+    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/run.R
+    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/definition.yaml
+    trials:
+      dim3 :
+        parameters : min_dim=3
+        preprocessing : pca
+      dim4 :
+        parameters : min_dim=4
+        preprocessing : pca
+      dim5 :
+        parameters : min_dim=5
+        preprocessing : pca
+  slingshot_lsi : 
+    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/signac/run.R
+    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/signac/definition.yaml
+    trials:
+      dim3 :
+        parameters : min_dim=3
+        preprocessing : lsi
+      dim4 :
+        parameters : min_dim=4
+        preprocessing : lsi
+      dim5 :
+        parameters : min_dim=5
+        preprocessing : lsi

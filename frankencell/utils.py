@@ -48,7 +48,7 @@ def read_feature_info(filename):
 
 
 def dataset_to_anndata(dataset):
-
+    
     counts = sparse.csr_matrix(dataset['counts'].values).astype(np.float32)
 
     return anndata.AnnData(

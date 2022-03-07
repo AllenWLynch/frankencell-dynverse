@@ -41,3 +41,20 @@ parameters:
   values:
   - manhattan
   - euclidean
+- id: use_rep
+  type : character
+  default : joint
+  values:
+    - joint
+    - RNA
+    - ATAC
+- id: box_cox
+  default : 0.5
+  type : numeric
+  distribution:
+    lower : 0
+    upper : 1
+    type : uniform
+- id : are_topic_compositions
+  default : TRUE
+  type : logical

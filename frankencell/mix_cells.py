@@ -1,12 +1,15 @@
+from ast import parse
+from typing_extensions import Required
 from scipy.stats import multivariate_hypergeom, lognorm
 from scipy import sparse
 import numpy as np
 import anndata
 from functools import partial
 from joblib import Parallel, delayed
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from .utils import read_cell_info, add_expression_to_dynframe
 import pandas as pd
+import shutil
 
 from dynclipy.dataset import add_adder, Dataset
 add_adder(Dataset, "add_expression")
@@ -32,13 +35,8 @@ def mix_cell_reads(read_depth, mixing_weights, cells):
         
     def geom_sample_sparse_array(arr, n_samples):
 
-        try:
-
-            subsampled_reads = multivariate_hypergeom(arr.data, n_samples).rvs()
-            return sparse.csr_matrix((subsampled_reads.reshape(-1), arr.indices, arr.indptr), shape = arr.shape)
-
-        except ValueError:
-            print(arr.data, arr.data.sum(), n_samples, cells)
+        subsampled_reads = multivariate_hypergeom(arr.data, n_samples).rvs()
+        return sparse.csr_matrix((subsampled_reads.reshape(-1), arr.indices, arr.indptr), shape = arr.shape)
         
     mixed_cell = sparse.csr_matrix(sparse.vstack([
         geom_sample_sparse_array(feature_counts, int(read_depth * m))
@@ -145,7 +143,6 @@ def sample_bounded_read_depth(exp_mean, std, max_std, n_cells):
     mult = 2
     while not found_depths:
         samples = lognorm(std, 0, exp_mean).rvs(n_cells * mult)
-        print(samples)
         allowed_samples = (samples < max_counts) & (samples > min_counts)
 
         if allowed_samples.sum() >= n_cells:
@@ -183,15 +180,14 @@ def check_datasets(datasets, cell_state_col):
     )
 
 
-def mix_frankencells(
-    dynframe,*,
+def mix_frankencells(*,
+    scaffold,
     datasets, 
     rd_means, 
     rd_stds, 
     pure_states, 
     feature_types,
     max_std = 2.5, 
-    n_cells = 1000, 
     cell_state_col = 'leiden',
     counts_layer = 'counts',
     n_jobs = 1,
@@ -200,9 +196,11 @@ def mix_frankencells(
 ):
 
     if output_path is None:
-        output_path = dynframe
+        output_path = scaffold
 
-    cell_info = read_cell_info(dynframe)
+    shutil.copyfile(scaffold, output_path)
+
+    cell_info = read_cell_info(output_path)
     mixing_weights = cell_info.iloc[:, cell_info.columns.str.startswith('mix_weight_')].values
 
     assert(np.all([
@@ -210,12 +208,13 @@ def mix_frankencells(
             for arg in [rd_means, rd_stds, feature_types]]))
 
     assert(len(pure_states) >= mixing_weights.shape[1])
+    datasets = read_datasets(datasets)
     check_datasets(datasets, cell_state_col)
 
     np.random.seed(seed)
 
     required_read_depths = list(zip(*[
-        sample_bounded_read_depth(mean, std, max_std, n_cells)
+        sample_bounded_read_depth(mean, std, max_std, len(mixing_weights))
         for mean, std in zip(rd_means, rd_stds)
     ]))
 
@@ -257,25 +256,23 @@ def mix_frankencells(
         'feature_type' : feature_type}
     )
 
-    add_expression_to_dynframe(dynframe, output_path, feature_df, 
+    add_expression_to_dynframe(output_path, output_path, feature_df, 
         counts = all_counts)
 
 
-def get_parser(parser):
+def add_arguments(parser):
 
-    '''mix_frankencells(
-    dynframe,*,
-    datasets, 
-    rd_means, 
-    rd_stds, 
-    pure_states, 
-    feature_types,
-    max_std = 2.5, 
-    n_cells = 1000, 
-    cell_state_col = 'leiden',
-    counts_layer = 'counts',
-    n_jobs = 1,
-    seed = None,
-    output_path = None,
-    '''
+    parser.add_argument('--scaffold', '-i', type = str, required = True)
+    parser.add_argument('--datasets', '-d', type = str, nargs = "+",
+        required = True)
+    parser.add_argument('--rd-means', '-mu', type = float, nargs = "+", required = True)
+    parser.add_argument('--rd-stds', '-std', type = float, nargs = "+", required = True)
+    parser.add_argument('--pure-states', '-s', type = str, nargs = "+", required = True)
+    parser.add_argument('--feature-types', '-f', type = str, nargs = "+", required = True)
+    parser.add_argument('--max-std', type = float, default = 2.5)
+    parser.add_argument('--cell-state-col', '-col', type = str, default = 'leiden')
+    parser.add_argument('--counts-layer', '-l', type = str, default = 'counts')
+    parser.add_argument('--n-jobs', '-j', type = int, default = 1)
+    parser.add_argument('--seed', type = int, default = None)
+    parser.add_argument('--output-path', '-o', type = str, required = True)
 
