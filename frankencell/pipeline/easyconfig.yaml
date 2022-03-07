@@ -1,7 +1,7 @@
 #____GENERAL____
 
 prefix : 'data/easy'
-restart : TRUE
+restart : FALSE
 
 #____SCAFFOLDS____
 
@@ -24,7 +24,7 @@ scaffolds:
 
 #____TESTS____
 
-test_replicates : 3
+test_replicates : 1
 
 default_test_parameters:
   datasets:
@@ -41,10 +41,6 @@ default_test_parameters:
 test_conditions:
   test1 :
     rd_means : [4000, 8000]
-  test2 : 
-    rd_means : [2000, 4000]
-  test3 : 
-    rd_means : [1000, 2000]
     
 
 #____PREPROCESSING____
@@ -54,23 +50,26 @@ default_preprocessing_parameters:
 preprocessing:
   pca :
     script : pca-preprocess
+    concurrent_job_penalty : 1
     parameters:
       min_dispersion : 0.7
       feature_type : RNA
   lsi :
     script : lsi-preprocess
+    concurrent_job_penalty : 1
     parameters :
       feature_type : ATAC
   mira_monotonic :
     script : mira-preprocess
+    concurrent_job_penalty : 1
     parameters:
       use_atac_features : FALSE
       min_dispersion : 0.7
       tune : FALSE
-      box_cox : 0.5
       kl_strategy : monotonic
   mira_cyclic : 
     script : mira-preprocess
+    concurrent_job_penalty : 1
     parameters :
       use_atac_features : FALSE
       min_dispersion : 0.7
@@ -81,121 +80,63 @@ preprocessing:
 default_method_parameters: {}
 
 methods :
-  slingshot_pca : 
-    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/run.R
-    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/definition.yaml
-    trials:
-      min_dim_3:
-        parameters: min_dim=3
-        preprocessing: pca
-      min_dim_4:
-        parameters: min_dim=4
-        preprocessing: pca
-      min_dim_5:
-        parameters: min_dim=5
-        preprocessing: pca
-  slingshot_lsi : 
-    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/signac/run.R
-    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/signac/definition.yaml
-    trials:
-      allen_3_False:
-        parameters: min_dim=3, style="allen", skip_first_dim=FALSE
-        preprocessing: lsi
-      allen_3_True:
-        parameters: min_dim=3, style="allen", skip_first_dim=TRUE
-        preprocessing: lsi
-      allen_4_False:
-        parameters: min_dim=4, style="allen", skip_first_dim=FALSE
-        preprocessing: lsi
-      allen_4_True:
-        parameters: min_dim=4, style="allen", skip_first_dim=TRUE
-        preprocessing: lsi
-      allen_5_False:
-        parameters: min_dim=5, style="allen", skip_first_dim=FALSE
-        preprocessing: lsi
-      allen_5_True:
-        parameters: min_dim=5, style="allen", skip_first_dim=TRUE
-        preprocessing: lsi
-      seurat_3_False:
-        parameters: min_dim=3, style="seurat", skip_first_dim=FALSE
-        preprocessing: lsi
-      seurat_3_True:
-        parameters: min_dim=3, style="seurat", skip_first_dim=TRUE
-        preprocessing: lsi
-      seurat_4_False:
-        parameters: min_dim=4, style="seurat", skip_first_dim=FALSE
-        preprocessing: lsi
-      seurat_4_True:
-        parameters: min_dim=4, style="seurat", skip_first_dim=TRUE
-        preprocessing: lsi
-      seurat_5_False:
-        parameters: min_dim=5, style="seurat", skip_first_dim=FALSE
-        preprocessing: lsi
-      seurat_5_True:
-        parameters: min_dim=5, style="seurat", skip_first_dim=TRUE
-        preprocessing: lsi
-      signac_3_False:
-        parameters: min_dim=3, style="signac", skip_first_dim=FALSE
-        preprocessing: lsi
-      signac_3_True:
-        parameters: min_dim=3, style="signac", skip_first_dim=TRUE
-        preprocessing: lsi
-      signac_4_False:
-        parameters: min_dim=4, style="signac", skip_first_dim=FALSE
-        preprocessing: lsi
-      signac_4_True:
-        parameters: min_dim=4, style="signac", skip_first_dim=TRUE
-        preprocessing: lsi
-      signac_5_False:
-        parameters: min_dim=5, style="signac", skip_first_dim=FALSE
-        preprocessing: lsi
-      signac_5_True:
-        parameters: min_dim=5, style="signac", skip_first_dim=TRUE
-        preprocessing: lsi
+  mira_tree :
+    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/run
+    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml
+    trials : 
+      mira_cyclic_RNA_log:
+        parameters: use_rep="RNA", box_cox=0
+        preprocessing: mira_cyclic
+      mira_cyclic_RNA_sqrt:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_cyclic
+        parameters: use_rep="RNA", box_cox=0
+        preprocessing: mira_monotonic
+      mira_monotonic_RNA_sqrt:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_monotonic
 
-mira_tree :
-  run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/run
-  definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml
-  trials : 
-    mira_cyclic_ATAC_log:
-      parameters: use_rep="ATAC", box_cox=0
-      preprocessing: mira_cyclic
-    mira_cyclic_ATAC_sqrt:
-      parameters: use_rep="ATAC", box_cox=0.5
-      preprocessing: mira_cyclic
-    mira_cyclic_RNA_log:
-      parameters: use_rep="RNA", box_cox=0
-      preprocessing: mira_cyclic
-    mira_cyclic_RNA_sqrt:
-      parameters: use_rep="RNA", box_cox=0.5
-      preprocessing: mira_cyclic
-    mira_cyclic_joint_log:
-      parameters: use_rep="joint", box_cox=0
-      preprocessing: mira_cyclic
-    mira_cyclic_joint_sqrt:
-      parameters: use_rep="joint", box_cox=0.5
-      preprocessing: mira_cyclic
-    mira_monotonic_ATAC_log:
-      parameters: use_rep="ATAC", box_cox=0
-      preprocessing: mira_monotonic
-    mira_monotonic_ATAC_sqrt:
-      parameters: use_rep="ATAC", box_cox=0.5
-      preprocessing: mira_monotonic
-    mira_monotonic_RNA_log:
-      parameters: use_rep="RNA", box_cox=0
-      preprocessing: mira_monotonic
-    mira_monotonic_RNA_sqrt:
-      parameters: use_rep="RNA", box_cox=0.5
-      preprocessing: mira_monotonic
-    mira_monotonic_joint_constrained_log:
-      parameters: use_rep="joint_constrained", box_cox=0
-      preprocessing: mira_monotonic
-    mira_monotonic_joint_constrained_sqrt:
-      parameters: use_rep="joint_constrained", box_cox=0.5
-      preprocessing: mira_monotonic
-    mira_monotonic_joint_log:
-      parameters: use_rep="joint", box_cox=0
-      preprocessing: mira_monotonic
-    mira_monotonic_joint_sqrt:
-      parameters: use_rep="joint", box_cox=0.5
-      preprocessing: mira_monotonic
+slingshot_pca : 
+  run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/run.R
+  definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/definition.yaml
+  trials:
+    min_dim_3:
+      parameters: min_dim=3
+      preprocessing: pca
+    min_dim_4:
+      parameters: min_dim=4
+      preprocessing: pca
+    min_dim_5:
+      parameters: min_dim=5
+      preprocessing: pca
+slingshot_lsi : 
+  run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/signac/run.R
+  definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/signac/definition.yaml
+  trials:
+    allen_3_True:
+      parameters: min_dim=3, style="allen", skip_first_dim=TRUE
+      preprocessing: lsi
+    allen_4_True:
+      parameters: min_dim=4, style="allen", skip_first_dim=TRUE
+      preprocessing: lsi
+    allen_5_True:
+      parameters: min_dim=5, style="allen", skip_first_dim=TRUE
+      preprocessing: lsi
+    seurat_3_True:
+      parameters: min_dim=3, style="seurat", skip_first_dim=TRUE
+      preprocessing: lsi
+    seurat_4_True:
+      parameters: min_dim=4, style="seurat", skip_first_dim=TRUE
+      preprocessing: lsi
+    seurat_5_True:
+      parameters: min_dim=5, style="seurat", skip_first_dim=TRUE
+      preprocessing: lsi
+    signac_3_True:
+      parameters: min_dim=3, style="signac", skip_first_dim=TRUE
+      preprocessing: lsi
+    signac_4_True:
+      parameters: min_dim=4, style="signac", skip_first_dim=TRUE
+      preprocessing: lsi
+    signac_5_True:
+      parameters: min_dim=5, style="signac", skip_first_dim=TRUE
+      preprocessing: lsi

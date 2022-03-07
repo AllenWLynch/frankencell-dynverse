@@ -142,6 +142,7 @@ rule make_test :
         "{prefix}.{scaffold}.{test}.h5"
     params : 
         args = "{prefix}.{scaffold}.{test}.yaml"
+    threads : 5
     shell : 
         "./franken-cells-yaml mix-cells {params.args}"
 
@@ -153,9 +154,10 @@ rule preprocess :
     params : 
         script = lambda w : config['preprocessing'][w.preprocess]['script'],
         args = "{prefix}.{scaffold}.{test}.{preprocess}.yaml"
+    resources : 
+        concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty']
     shell : 
         "./franken-cells-yaml {params.script} {params.args}"
-
 
 rule evaluate :
     input : 

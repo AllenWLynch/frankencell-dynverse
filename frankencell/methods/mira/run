@@ -50,7 +50,7 @@ def process_dimred(data,
             if divider_col == 0 or divider_col == topics.shape[-1]-1:
                 raise ValueError('User wanted to use "joint" representation, but only one representation was given')
 
-            rep1, rep2 = topics[:, :divider_col-1], topics[:,divider_col+1:]
+            rep1, rep2 = topics[:, :divider_col], topics[:,divider_col+1:]
 
             if use_rep == 'joint':
                 data.obsm['embedding_features'] = np.hstack([
@@ -64,11 +64,13 @@ def process_dimred(data,
                 )
 
         elif use_rep == 'RNA':
-            data.obsm['embedding_features'] = get_umap_features(topics[:, :divider_col-1], box_cox)
+            data.obsm['embedding_features'] = get_umap_features(topics[:, :divider_col], box_cox)
         elif use_rep == 'ATAC':
             data.obsm['embedding_features'] = get_umap_features(topics[:, divider_col+1:], box_cox)
         else:
             raise ValueError('Representation {} is unknown.'.format(use_rep))
+
+        #print(data.obsm['embedding_features'], data.obsm['embedding_features'].shape, data.obs_names)
 
     else:
         data.obsm['embedding_features'] = data.obsm['dimred']
@@ -101,19 +103,23 @@ def format_results(adata):
     branch_names = adata.uns['tree_state_names'][:-1]
     branch_tips = adata.obs.groupby('tree_states')['mira_pseudotime'].max()
 
-    branch_start_time = dict(zip(branch_names, tree_matrix.max(0)))
-    branch_end_time = {
-        state : branch_tips[state] if end_time == 0 else end_time
-        for state, end_time in zip(branch_names, tree_matrix.max(-1))
-    }
+    try:
+        branch_start_time = dict(zip(branch_names, tree_matrix.max(0)))
+        branch_end_time = {
+            state : branch_tips[state] if end_time == 0 else end_time
+            for state, end_time in zip(branch_names, tree_matrix.max(-1))
+        }
 
-    def progress(state, time):
-        return (time - branch_start_time[state])/(branch_end_time[state] - branch_start_time[state])
+        def progress(state, time):
+            return (time - branch_start_time[state])/(branch_end_time[state] - branch_start_time[state])
 
-    percentage = np.array(
-        [progress(state, time) 
-         for state, time in zip(adata.obs_vector('tree_states'), adata.obs_vector('mira_pseudotime'))]
-    )
+        percentage = np.array(
+            [progress(state, time) 
+            for state, time in zip(adata.obs_vector('tree_states'), adata.obs_vector('mira_pseudotime'))]
+        )
+    except KeyError:
+        min_time, max_time = adata.obs.mira_pseudotime.values.min(), adata.obs.mira_pseudotime.values.max()
+        percentage = (adata.obs.mira_pseudotime.values - min_time)/(max_time - min_time)
 
     branch_progressions = pd.DataFrame(
         {
@@ -195,7 +201,6 @@ if __name__ == "__main__":
     N = len(rna_counts)
 
     dimred = np.array(dataset['priors']['dimred']).reshape((-1, N)).T
-    print(dimred.shape)
 
     adata = anndata.AnnData(
         obs = pd.DataFrame(index = rna_counts.index.values), obsm = {'dimred' : dimred}
