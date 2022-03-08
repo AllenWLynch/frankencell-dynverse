@@ -1,6 +1,6 @@
 
 import yaml
-configfile: "frankencell/pipeline/easyconfig.yaml"
+configfile: "frankencell/pipeline/lasthardconfig.yaml"
 
 def write_scaffold_config(config, prefix, scaffold):
     

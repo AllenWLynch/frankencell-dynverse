@@ -67,7 +67,6 @@ def train(
 ):  
     use_atac_features = not atac_data is None
     use_rna_features = not rna_data is None
-    do_joint = use_atac_features and use_rna_features
 
     if use_rna_features:
 

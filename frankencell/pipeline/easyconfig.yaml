@@ -1,15 +1,15 @@
 #____GENERAL____
 
-prefix : 'data/easy'
+prefix : 'data/lasthardtest'
 restart : FALSE
 
 #____SCAFFOLDS____
 
-default_scaffold_parameters :
+default_scaffold_parameters:
   sigmoid_aggression : 6
-  n_cells : 200
+  n_cells : 1000
   gamma : 0.1
-  max_depth : 2
+  max_depth : 3
   max_width : 2
   ptime_beta : 0.5
   ptime_alpha : 1.
