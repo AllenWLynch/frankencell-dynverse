@@ -141,11 +141,11 @@ def main(
     use_atac_features = True,
     use_rna_features = True,
     tuning_iters = 32,
-    min_topics = 5,
-    max_topics = 12,
-    max_dropout = 0.05,
-    min_epochs = 20,
-    max_epochs = 40,
+    min_topics = 7,
+    max_topics = 13,
+    max_dropout = 0.15,
+    min_epochs = 30,
+    max_epochs = 60,
     cv = 5,
     train_size=0.8,
     seed = None,
@@ -194,6 +194,7 @@ def main(
         tune = tune,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
+	hidden = hidden
     )
 
     add_expression_to_dynframe(

@@ -1,6 +1,6 @@
 #____GENERAL____
 
-prefix : 'data/test2/'
+prefix : 'data/tune/'
 restart  : FALSE
 
 #____SCAFFOLDS____
@@ -51,7 +51,7 @@ scaffolds:
 
 #____TESTS____
 
-test_replicates : 3
+test_replicates : 1
 
 default_test_parameters:
   datasets:
@@ -89,7 +89,11 @@ preprocessing:
     parameters:
       use_atac_features : FALSE
       min_dispersion : 0.7
-      tune : FALSE
+      tune : TRUE
+      max_dropout : 0.15
+      min_epochs : 40
+      max_epochs : 60
+      min_topics : 7
       kl_strategy : monotonic
   mira_cyclic : 
     script : mira-preprocess
@@ -97,8 +101,25 @@ preprocessing:
     parameters :
       use_atac_features : FALSE
       min_dispersion : 0.7
-      tune : FALSE
+      tune : TRUE
+      max_dropout : 0.15
+      min_topics : 7
+      min_epochs : 40
+      max_epochs : 60
       kl_strategy : cyclic
+  mira_hidden :
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters :
+      use_atac_features : FALSE
+      min_dispersion : 0.7
+      tune : TRUE
+      max_dropout : 0.15
+      min_topics : 7
+      min_epochs : 40
+      max_epochs : 60
+      kl_strategy : cyclic
+      hidden : 64
 
 #____METHODS____
 default_method_parameters: {}
@@ -108,18 +129,15 @@ methods :
     run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/run
     definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml
     trials : 
-      mira_cyclic_RNA_log:
-        parameters: use_rep="RNA", box_cox=0
-        preprocessing: mira_cyclic
       mira_cyclic_RNA_sqrt:
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: mira_cyclic
-      mira_monotonic_RNA_log:
-        parameters: use_rep="RNA", box_cox=0
-        preprocessing: mira_monotonic
       mira_monotonic_RNA_sqrt:
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: mira_monotonic
+      mira_hidden_RNA_sqrt:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_hidden
   slingshot_pca : 
     run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
     definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml
