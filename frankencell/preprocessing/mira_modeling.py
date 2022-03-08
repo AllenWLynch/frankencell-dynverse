@@ -58,12 +58,12 @@ def train(
     rna_data, 
     atac_data,
     dataset_id,
+    training_args,
     seed = None,
     tune = True,
     min_cells = 25,
     min_dispersion = 0.7,
     kl_strategy = 'monotonic',
-    **training_args,
 ):  
     use_atac_features = not atac_data is None
     use_rna_features = not rna_data is None
@@ -143,7 +143,7 @@ def main(
 ):
 
     training_args = dict(
-        tuning_iters = tuning_iters, cv = cv, 
+        iters = tuning_iters, cv = cv, 
         min_epochs = min_epochs, max_epochs = max_epochs,
         min_topics = min_topics, max_topics = max_topics, max_dropout = max_dropout,
         train_size = train_size, 
@@ -167,12 +167,12 @@ def main(
         rna_data, 
         atac_data,
         output_path,
+        training_args,
         seed = seed,
         tune = tune,
-        kl_strategy = 'monotonic',
+        kl_strategy = kl_strategy,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
-        **training_args,
     )
 
     add_expression_to_dynframe(
