@@ -4,34 +4,33 @@ from frankencell.preprocessing.basic_preprocessing import basic_rna_preprocessin
 from frankencell.utils import read_dynframe, select_features, write_cell_info, add_dimred_prior, add_expression_to_dynframe
 import logging
 from shutil import copyfile
+from sklearn.model_selection import ShuffleSplit
 
-def init_rna_model(seed, kl_strategy):
+def init_rna_model(model_args):
     rna_model = mira.topics.ExpressionTopicModel(
         beta=0.90,
         batch_size=32,
-        seed = seed,
         encoder_dropout=0.05,
         num_topics = 8,
         decoder_dropout = 0.2,
         num_epochs = 60,
         counts_layer= 'counts',
-        kl_strategy = kl_strategy,
+        **model_args
     )
     rna_model.set_learning_rates(1e-2, 2e-1)
 
     return rna_model
     
 
-def init_atac_model(seed, kl_strategy):
+def init_atac_model(model_args):
 
     atac_model = mira.topics.AccessibilityTopicModel(
         beta=0.93,
-        batch_size=64,
-        seed = seed,
+        batch_size=32,
         encoder_dropout=0.07,
         num_topics = 7,
         counts_layer= 'counts',
-        kl_strategy = kl_strategy,
+        **model_args
     )
     atac_model.set_learning_rates(1e-2, 2e-1)
     
@@ -41,16 +40,31 @@ def init_atac_model(seed, kl_strategy):
 def tune_model(adata, model, save_name, **kwargs):
 
     train_size = kwargs.pop('train_size')
+    cv = kwargs.pop('cv')
+    top_n_trials = kwargs.pop('top_n_trials')
+
+    if cv == 'shufflesplit':
+        cv = ShuffleSplit(n_splits= 5, train_size=train_size)
+    if cv == 'cv':
+        cv = 5
 
     tuner = mira.topics.TopicModelTuner(
-        model, save_name = save_name,
+        model, save_name = save_name, cv = cv,
         **kwargs
     )
 
-    tuner.train_test_split(adata, train_size= train_size)
+    if top_n_trials == 1:
+        adata.obs[tuner.test_column] = False
+        adata.obs[tuner.test_column][np.random.choice(len(adata), size = 2)] = True
+    else:
+        tuner.train_test_split(adata, train_size= train_size)
+
     tuner.tune(adata)
 
-    best_model = tuner.select_best_model(adata)
+    if top_n_trials == 1:
+        best_model = model.set_params(**tuner.get_best_params(1)[0]).fit(adata)
+    else:
+        best_model = tuner.select_best_model(adata, top_n_trials=top_n_trials)
 
     return best_model
 
@@ -59,18 +73,17 @@ def train(
     atac_data,
     dataset_id,
     training_args,
-    seed = None,
+    model_args,
     tune = True,
     min_cells = 25,
     min_dispersion = 0.7,
-    kl_strategy = 'monotonic',
 ):  
     use_atac_features = not atac_data is None
     use_rna_features = not rna_data is None
 
     if use_rna_features:
 
-        rna_model = init_rna_model(seed, kl_strategy)
+        rna_model = init_rna_model(model_args)
         rna_data = basic_rna_preprocessing(rna_data, min_cells, min_dispersion)
 
         if tune:
@@ -85,7 +98,7 @@ def train(
 
         basic_atac_preprocessing(atac_data, min_cells)
         
-        atac_model = init_atac_model(seed, kl_strategy)
+        atac_model = init_atac_model(model_args)
 
         if tune:
             atac_model = tune_model(atac_data, atac_model, dataset_id+'_atac_study.pkl', **training_args)
@@ -137,16 +150,25 @@ def main(
     train_size=0.8,
     seed = None,
     tune = True,
-    kl_strategy = 'monotonic',
     min_cells = 25,
-    min_dispersion = 0.7
+    min_dispersion = 0.7,
+    kl_strategy = 'monotonic',
+    hidden = 128,
+    layers = 3,
+    top_n_trials = 5,
 ):
 
     training_args = dict(
         iters = tuning_iters, cv = cv, 
         min_epochs = min_epochs, max_epochs = max_epochs,
         min_topics = min_topics, max_topics = max_topics, max_dropout = max_dropout,
-        train_size = train_size, 
+        train_size = train_size, top_n_trials = top_n_trials,
+    )
+
+    model_args = dict(
+        kl_strategy = kl_strategy, hidden = hidden, seed = seed,
+        num_layers = layers, 
+
     )
 
     adata = read_dynframe(dynframe_path)
@@ -168,9 +190,8 @@ def main(
         atac_data,
         output_path,
         training_args,
-        seed = seed,
+        model_args,
         tune = tune,
-        kl_strategy = kl_strategy,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
     )

@@ -1,0 +1,1071 @@
+#____GENERAL____
+
+prefix : 'data/tune/'
+restart  : FALSE
+
+#____SCAFFOLDS____
+default_scaffold_parameters:
+  sigmoid_aggression : 6
+  n_cells : 1000
+  gamma : 0.1
+  max_depth : 3
+  max_width : 2
+  ptime_beta : 0.5
+  ptime_alpha : 1.
+
+scaffolds:
+  scaffold0:
+    state_compositions:
+    - - 1
+      - 0
+      - 0
+      - 0
+    - - 0.5
+      - 0.35
+      - 0.075
+      - 0.075
+    - - 0.2
+      - 0.2
+      - 0.30000000000000004
+      - 0.30000000000000004
+    - - 0.3
+      - 0.625
+      - 0.0375
+      - 0.0375
+    - - 0.1
+      - 0
+      - 0.7
+      - 0.2
+    - - 0.1
+      - 0
+      - 0.2
+      - 0.7
+    - - 0.1
+      - 0.9
+      - 0
+      - 0
+    - - 0.1
+      - 0.9
+      - 0
+      - 0
+
+#____TESTS____
+
+test_replicates : 1
+
+default_test_parameters:
+  datasets:
+    - data/benchmark_rna.h5ad
+  feature_types:
+    - RNA
+  pure_states: [C, A, B, D]
+  cell_state_col : cell_groups
+  n_jobs : 5
+  rd_stds : [0.45]
+
+test_conditions:
+  test1:
+    rd_means : [4000]
+
+#____PREPROCESSING____
+default_preprocessing_parameters: 
+  min_cells : 25
+
+preprocessing:
+  pca :
+    script : pca-preprocess
+    concurrent_job_penalty : 0
+    parameters:
+      min_dispersion : 0.7
+      feature_type : RNA
+  lsi :
+    script : lsi-preprocess
+    concurrent_job_penalty : 0
+    parameters :
+      feature_type : ATAC
+  mira_no_tune :
+    script : mira-preprocess
+    concurrent_job_penalty : 0
+    parameters:
+      use_atac_features : FALSE
+      min_dispersion : 0.7
+      tune : FALSE
+      kl_strategy : monotonic
+  128_2_cv_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_cv_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_cv_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_cv_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_cv_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_cv_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_09_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_09_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_2_shufflesplit_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_cv_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_cv_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_cv_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_cv_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_cv_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_cv_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_09_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_09_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  128_3_shufflesplit_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 128
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_cv_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_cv_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_cv_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_cv_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_cv_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_cv_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_09_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_09_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_2_shufflesplit_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 2
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_cv_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_cv_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_cv_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_cv_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_cv_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_cv_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: cv
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_08_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_08_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_08_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_08_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.8
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_09_5_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_09_5_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 5
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_09_7_1:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 1
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+  64_3_shufflesplit_09_7_5:
+    concurrent_job_penalty: 0
+    parameters:
+      cv: shufflesplit
+      hidden: 64
+      kl_strategy: monotonic
+      layers: 3
+      min_dispersion: 0.7
+      min_topics: 7
+      top_n_trials: 5
+      train_size: 0.9
+      tune: true
+      use_atac_features: false
+    script: mira-preprocess
+
+
+default_method_parameters : {}
+
+methods:
+  slingshot_pca : 
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml
+    trials:
+      min_dim_3:
+        parameters: min_dim=3
+        preprocessing: pca
+      min_dim_4:
+        parameters: min_dim=4
+        preprocessing: pca
+      min_dim_5:
+        parameters: min_dim=5
+        preprocessing: pca
+  mira_tree:
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/run
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml
+    trials:
+      mira_no_tune:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_no_tune
+    yeah:
+      mira0:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_08_5_1
+      mira1:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_09_5_1
+      mira10:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_cv_09_5_5
+      mira11:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_cv_08_7_1
+      mira12:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_cv_08_7_5
+      mira13:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_cv_09_7_5
+      mira14:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_08_5_1
+      mira15:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_09_5_1
+      mira16:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_08_5_5
+      mira17:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_09_5_5
+      mira18:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_08_7_1
+      mira19:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_09_7_1
+      mira2:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_08_5_5
+      mira20:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_08_7_5
+      mira21:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_shufflesplit_09_7_5
+      mira22:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_cv_08_5_1
+      mira23:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_cv_08_5_5
+      mira24:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_cv_09_5_5
+      mira25:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_cv_08_7_1
+      mira26:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_cv_08_7_5
+      mira27:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_3_cv_09_7_5
+      mira28:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_08_5_1
+      mira29:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_09_5_1
+      mira3:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_09_5_5
+      mira30:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_08_5_5
+      mira31:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_09_5_5
+      mira32:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_08_7_1
+      mira33:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_09_7_1
+      mira34:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_08_7_5
+      mira35:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_shufflesplit_09_7_5
+      mira36:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_cv_08_5_1
+      mira37:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_cv_08_5_5
+      mira38:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_cv_09_5_5
+      mira39:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_cv_08_7_1
+      mira4:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_08_7_1
+      mira40:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_cv_08_7_5
+      mira41:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_2_cv_09_7_5
+      mira42:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_08_5_1
+      mira43:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_09_5_1
+      mira44:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_08_5_5
+      mira45:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_09_5_5
+      mira46:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_08_7_1
+      mira47:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_09_7_1
+      mira48:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_08_7_5
+      mira49:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_shufflesplit_09_7_5
+      mira5:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_09_7_1
+      mira50:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_cv_08_5_1
+      mira51:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_cv_08_5_5
+      mira52:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_cv_09_5_5
+      mira53:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_cv_08_7_1
+      mira54:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_cv_08_7_5
+      mira55:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 128_3_cv_09_7_5
+      mira6:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_08_7_5
+      mira7:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_shufflesplit_09_7_5
+      mira8:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_cv_08_5_1
+      mira9:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: 64_2_cv_08_5_5
