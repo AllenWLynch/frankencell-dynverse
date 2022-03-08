@@ -1,45 +1,64 @@
-
 import yaml
-configfile: "frankencell/pipeline/lasthardconfig.yaml"
+import os
+configfile: "frankencell/pipeline/easyconfig.yaml"
+prefix = config['prefix']
+
+SCAFFOLD_PATH = prefix+'scaffolds/{scaffold}.h5'
+TEST_PATH = prefix+'tests/{scaffold}.{test}-{rep}.h5'
+PREPROCESS_PATH = prefix+'preprocessed/{scaffold}.{test}-{rep}.{preprocess}.h5'
+EVALUATION_PATH = prefix+'evaluations/{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.h5'
+RESULTS_PATH = prefix + 'results/{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.results.csv'
+
+configdir_path = prefix + 'configs/'
+if not os.path.isdir(configdir_path):
+    os.mkdir(configdir_path)
+SCAFFOLD_CONFIG = configdir_path + '{scaffold}.yaml'
+TEST_CONFIG = configdir_path + '{scaffold}.{test}-{rep}.yaml'
+PREPROCESS_CONFIG = configdir_path + '{scaffold}.{test}-{rep}.{preprocess}.yaml'
+RESULTS_CONFIG = configdir_path + '{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.yaml'
+
+logs_path = prefix + 'logs/'
+SCAFFOLD_LOGS = logs_path + 'scaffolds/{scaffold}.yaml'
+TEST_LOGS = logs_path + 'tests/{scaffold}.{test}-{rep}.yaml'
+PREPROCESS_LOGS = logs_path + 'preprocessing/{scaffold}.{test}-{rep}.{preprocess}.yaml'
+RESULTS_LOGS = logs_path + 'results/{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.yaml'
 
 def write_scaffold_config(config, prefix, scaffold):
     
-    with open('{prefix}.{scaffold}.yaml'.format(
+    with open(SCAFFOLD_CONFIG.format(
                 prefix=prefix, scaffold=scaffold),'w') as f:
         yaml.dump({
             **config['default_scaffold_parameters'],
             **config['scaffolds'][scaffold],
-            'output_path' : '{prefix}.{scaffold}.h5'.format(prefix=prefix, scaffold=scaffold)
+            'output_path' : SCAFFOLD_PATH.format(scaffold=scaffold)
         }, f)
 
 
 def write_test_config(config, prefix, scaffold, test, replicate):
     
-    with open('{prefix}.{scaffold}.{test}-{rep}.yaml'.format(
+    with open(TEST_CONFIG.format(
                 prefix=prefix, scaffold=scaffold, test=test, rep=replicate),'w') as f:
         yaml.dump({
             **config['default_test_parameters'],
             **config['test_conditions'][test],
-            'scaffold' : '{prefix}.{scaffold}.h5'.format(prefix = prefix, scaffold = scaffold),
-            'output_path' : '{prefix}.{scaffold}.{test}-{rep}.h5'.format(
-                prefix=prefix, scaffold=scaffold, test=test, rep=replicate),
+            'scaffold' : SCAFFOLD_PATH.format(scaffold=scaffold),
+            'output_path' : TEST_PATH.format(
+                scaffold=scaffold, test=test, rep=replicate),
             'seed' : replicate + 1775,
         }, f)
         
 def write_preprocess_config(config, prefix, 
                         scaffold, test, replicate, preprocess):
 
-    with open('{prefix}.{scaffold}.{test}-{rep}.{preprocess}.yaml'.format(
+    with open(PREPROCESS_CONFIG.format(
                 prefix=prefix, scaffold=scaffold, test=test, 
                 preprocess=preprocess, rep=replicate),'w') as f:
         yaml.dump({
             **config['default_preprocessing_parameters'],
             **config['preprocessing'][preprocess]['parameters'],
-            'dynframe_path' : '{prefix}.{scaffold}.{test}-{rep}.h5'.format(
-                prefix=prefix, scaffold=scaffold, test=test, rep=replicate),
-            'output_path' : '{prefix}.{scaffold}.{test}-{rep}.{preprocess}.h5'.format(
-                prefix=prefix, scaffold=scaffold, 
-                test=test, preprocess=preprocess, rep=replicate)
+            'dynframe_path' : TEST_PATH.format(scaffold=scaffold, test=test, rep=replicate),
+            'output_path' : PREPROCESS_PATH.format(
+                scaffold=scaffold, test=test, preprocess=preprocess, rep=replicate)
         }, f)
 
 def write_method_config(config, prefix, scaffold, test, replicate, method,
@@ -52,22 +71,19 @@ def write_method_config(config, prefix, scaffold, test, replicate, method,
     write_preprocess_config(config, prefix, scaffold, test, replicate,
                            preprocess)
     
-    result_file = '{prefix}.{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.results.csv'.format(
-                prefix=prefix, scaffold=scaffold, test=test, rep=replicate,
+    result_file = RESULTS_PATH.format(scaffold=scaffold, test=test, rep=replicate,
                 preprocess=preprocess, method = method, trial = trial)
     
-    with open('{prefix}.{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.yaml'.format(
+    with open(RESULTS_CONFIG.format(
                 prefix=prefix, scaffold=scaffold, test=test, rep=replicate,
                 preprocess=preprocess, method=method, trial=trial),'w') as f:
         yaml.dump({**config['default_method_parameters'],
          'run_file' : config['methods'][method]['run_file'],
          'definition_file' : config['methods'][method]['definition_file'],
-         'goldstandard' : '{prefix}.{scaffold}.h5'.format(prefix=prefix, scaffold=scaffold),
-         'test_dataset' : '{prefix}.{scaffold}.{test}-{rep}.{preprocess}.h5'.format(
-                prefix=prefix, scaffold=scaffold, 
-                test=test, preprocess=preprocess, rep=replicate),
-         'method_output_path' : '{prefix}.{scaffold}.{test}-{rep}.{preprocess}.{method}.{trial}.h5'.format(
-                prefix=prefix, scaffold=scaffold, test=test, 
+         'goldstandard' : SCAFFOLD_PATH.format(scaffold=scaffold),
+         'test_dataset' : PREPROCESS_PATH.format(scaffold=scaffold, test=test, preprocess=preprocess, rep=replicate),
+         'method_output_path' : EVALUATION_PATH.format(
+                scaffold=scaffold, test=test, 
                 preprocess=preprocess, method = method, 
                 trial = trial, rep=replicate),
          'results_output_path' : result_file,
@@ -96,76 +112,64 @@ def set_up_trials(config):
     return results_files
 
 targets = set_up_trials(config)
-prefix = config['prefix']
+
+wildcard_constraints:
+    scaffold="\w+",
+    preprocess="\w+",
+    trial="\w+",
+    method="\w+",
+    test="\w+",
+    rep="\d+"
+
 
 rule all:
     input : targets
 
-wildcard_constraints:
-    scaffold="\w+"
-
-wildcard_constraints:
-    preprocess="\w+"
-
-wildcard_constraints:
-    trial="\w+"
-
-wildcard_constraints:
-    method="\w+"
-
-wildcard_constraints:
-    test="\w+-\d+"
-
-
-def define_input(w):
-
-    path = "{prefix}.{scaffold}.yaml"\
-                .format(prefix = prefix, scaffold = w.scaffold)
-    
-    if config['restart']:
-        return path
-    else:
-        return ancient(path)
 
 rule make_scaffold :
     input : 
-        args = define_input
+        args = ancient(SCAFFOLD_CONFIG) if not config['restart'] else SCAFFOLD_CONFIG
     output : 
-        "{prefix}.{scaffold}.h5"
+        SCAFFOLD_PATH
+    log : SCAFFOLD_LOGS
     shell : 
         "./franken-cells-yaml scaffold {input.args}"
 
 rule make_test : 
     input : 
-        "{prefix}.{scaffold}.h5"
+        SCAFFOLD_PATH
     output : 
-        "{prefix}.{scaffold}.{test}.h5"
+        TEST_PATH
     params : 
-        args = "{prefix}.{scaffold}.{test}.yaml"
+        args = TEST_CONFIG
     threads : 5
+    log : TEST_LOGS
     shell : 
         "./franken-cells-yaml mix-cells {params.args}"
 
 rule preprocess : 
     input : 
-        "{prefix}.{scaffold}.{test}.h5"
+        TEST_PATH
     output : 
-        "{prefix}.{scaffold}.{test}.{preprocess}.h5"
+        PREPROCESS_PATH
     params : 
         script = lambda w : config['preprocessing'][w.preprocess]['script'],
-        args = "{prefix}.{scaffold}.{test}.{preprocess}.yaml"
+        args = PREPROCESS_CONFIG
     resources : 
         concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty']
+    log : PREPROCESS_LOGS
     shell : 
         "./franken-cells-yaml {params.script} {params.args}"
 
 rule evaluate :
     input : 
-         "{prefix}.{scaffold}.{test}.{preprocess}.h5"
+        PREPROCESS_PATH
     output : 
-        "{prefix}.{scaffold}.{test}.{preprocess}.{method}.{trial}.results.csv"
+        results = RESULTS_PATH,
+        final_h5 = EVALUATION_PATH
     params : 
-        args = "{prefix}.{scaffold}.{test}.{preprocess}.{method}.{trial}.yaml"
+        args = RESULTS_CONFIG
+    log : RESULTS_LOGS
     shell: 
         "./franken-cells-yaml evaluate {params.args}"
 
