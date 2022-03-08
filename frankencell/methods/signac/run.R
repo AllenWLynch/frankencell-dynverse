@@ -51,8 +51,7 @@ RunTFIDF <- function(
   }
   if (style == 'allen'){
       scale.factor <- mean(npeaks)
-      print(scale.factor)
-      X <- log(1 + X*scale.factor)
+      X <- sqrt(X*scale.factor)
   }
   
   return(t(X))
