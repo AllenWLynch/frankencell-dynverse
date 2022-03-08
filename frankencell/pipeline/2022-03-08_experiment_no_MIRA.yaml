@@ -285,52 +285,6 @@ preprocessing:
 default_method_parameters: {}
 
 methods :
-  mira_tree :
-    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/run
-    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml
-    trials : 
-      mira_cyclic_ATAC_log:
-        parameters: use_rep="ATAC", box_cox=0
-        preprocessing: mira_cyclic
-      mira_cyclic_ATAC_sqrt:
-        parameters: use_rep="ATAC", box_cox=0.5
-        preprocessing: mira_cyclic
-      mira_cyclic_RNA_log:
-        parameters: use_rep="RNA", box_cox=0
-        preprocessing: mira_cyclic
-      mira_cyclic_RNA_sqrt:
-        parameters: use_rep="RNA", box_cox=0.5
-        preprocessing: mira_cyclic
-      mira_cyclic_joint_log:
-        parameters: use_rep="joint", box_cox=0
-        preprocessing: mira_cyclic
-      mira_cyclic_joint_sqrt:
-        parameters: use_rep="joint", box_cox=0.5
-        preprocessing: mira_cyclic
-      mira_monotonic_ATAC_log:
-        parameters: use_rep="ATAC", box_cox=0
-        preprocessing: mira_monotonic
-      mira_monotonic_ATAC_sqrt:
-        parameters: use_rep="ATAC", box_cox=0.5
-        preprocessing: mira_monotonic
-      mira_monotonic_RNA_log:
-        parameters: use_rep="RNA", box_cox=0
-        preprocessing: mira_monotonic
-      mira_monotonic_RNA_sqrt:
-        parameters: use_rep="RNA", box_cox=0.5
-        preprocessing: mira_monotonic
-      mira_monotonic_joint_constrained_log:
-        parameters: use_rep="joint_constrained", box_cox=0
-        preprocessing: mira_monotonic
-      mira_monotonic_joint_constrained_sqrt:
-        parameters: use_rep="joint_constrained", box_cox=0.5
-        preprocessing: mira_monotonic
-      mira_monotonic_joint_log:
-        parameters: use_rep="joint", box_cox=0
-        preprocessing: mira_monotonic
-      mira_monotonic_joint_sqrt:
-        parameters: use_rep="joint", box_cox=0.5
-        preprocessing: mira_monotonic
   slingshot_pca : 
     run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
     definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml

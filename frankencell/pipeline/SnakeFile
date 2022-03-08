@@ -1,6 +1,6 @@
 import yaml
 import os
-configfile: "frankencell/pipeline/easyconfig.yaml"
+configfile: "frankencell/pipeline/tune_test.yaml"
 prefix = config['prefix']
 
 SCAFFOLD_PATH = prefix+'scaffolds/{scaffold}.h5'
@@ -159,7 +159,7 @@ rule preprocess :
         script = lambda w : config['preprocessing'][w.preprocess]['script'],
         args = PREPROCESS_CONFIG
     resources : 
-        concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty']
+        concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty'],
         mem_mb = 1000
     log : PREPROCESS_LOGS
     shell : 

@@ -1,6 +1,6 @@
 #____GENERAL____
 
-prefix : 'data/test2/'
+prefix : 'data/tune/'
 restart  : FALSE
 
 #____SCAFFOLDS____
@@ -51,7 +51,7 @@ scaffolds:
 
 #____TESTS____
 
-test_replicates : 3
+test_replicates : 1
 
 default_test_parameters:
   datasets:
@@ -89,7 +89,9 @@ preprocessing:
     parameters:
       use_atac_features : FALSE
       min_dispersion : 0.7
-      tune : FALSE
+      tune : TRUE
+      min_epochs : 40
+      max_epochs : 60
       kl_strategy : monotonic
   mira_cyclic : 
     script : mira-preprocess
@@ -97,7 +99,9 @@ preprocessing:
     parameters :
       use_atac_features : FALSE
       min_dispersion : 0.7
-      tune : FALSE
+      tune : TRUE
+      min_epochs : 40
+      max_epochs : 60
       kl_strategy : cyclic
 
 #____METHODS____
