@@ -125,13 +125,14 @@ wildcard_constraints:
 rule all:
     input : targets
 
-
 rule make_scaffold :
     input : 
         args = ancient(SCAFFOLD_CONFIG) if not config['restart'] else SCAFFOLD_CONFIG
     output : 
         SCAFFOLD_PATH
     log : SCAFFOLD_LOGS
+    resources:
+        mem_mb = 100
     shell : 
         "./franken-cells-yaml scaffold {input.args}"
 
@@ -143,6 +144,8 @@ rule make_test :
     params : 
         args = TEST_CONFIG
     threads : 5
+    resources:
+        mem_mb = 2000
     log : TEST_LOGS
     shell : 
         "./franken-cells-yaml mix-cells {params.args}"
@@ -157,6 +160,7 @@ rule preprocess :
         args = PREPROCESS_CONFIG
     resources : 
         concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty']
+        mem_mb = 1000
     log : PREPROCESS_LOGS
     shell : 
         "./franken-cells-yaml {params.script} {params.args}"
@@ -170,6 +174,8 @@ rule evaluate :
     params : 
         args = RESULTS_CONFIG
     log : RESULTS_LOGS
+    resources :
+        mem_mb = 100
     shell: 
         "./franken-cells-yaml evaluate {params.args}"
 
