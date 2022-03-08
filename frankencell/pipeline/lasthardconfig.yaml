@@ -1,7 +1,7 @@
 #____GENERAL____
 
-prefix : 'data/hard'
-restart  : TRUE
+prefix : 'data/test/hard'
+restart  : FALSE
 
 #____SCAFFOLDS____
 default_scaffold_parameters:
@@ -55,7 +55,7 @@ test_replicates : 5
 
 default_test_parameters:
   datasets:
-    - ../frankencell/data/benchmark_rna.h5ad
+    - data/benchmark_rna.h5ad
   feature_types:
     - RNA
   pure_states: [C, A, B, D]
@@ -105,8 +105,8 @@ default_method_parameters: {}
 
 methods :
   mira_tree :
-    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/run
-    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/run
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml
     trials : 
       mira_cyclic_RNA_log:
         parameters: use_rep="RNA", box_cox=0
@@ -121,8 +121,8 @@ methods :
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: mira_monotonic
   slingshot_pca : 
-    run_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/run.R
-    definition_file : /Users/alynch/projects/multiomics/cellgen2/frankencell/methods/custom_slingshot/definition.yaml
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml
     trials:
       min_dim_3:
         parameters: min_dim=3

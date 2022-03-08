@@ -1,4 +1,4 @@
-#!/Users/alynch/opt/miniconda3/envs/mirarep/bin/python
+#!/liulab/alynch/projects/benchmarking_python/bin/python
 
 import anndata
 import scanpy as sc
@@ -193,7 +193,7 @@ def main(
 if __name__ == "__main__":
 
     dataset = dyn.main(definition_location=\
-        '/Users/alynch/projects/multiomics/cellgen2/frankencell/methods/mira/definition.yaml')
+        '/liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml')
 
     params = dataset['parameters']
     priors = dataset['priors']
