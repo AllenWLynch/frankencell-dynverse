@@ -5,7 +5,7 @@ from frankencell.utils import read_dynframe, select_features, write_cell_info, a
 import logging
 from shutil import copyfile
 
-def init_rna_model(seed, kl_strategy):
+def init_rna_model(seed, kl_strategy, hidden = 128):
     rna_model = mira.topics.ExpressionTopicModel(
         beta=0.90,
         batch_size=32,
@@ -16,13 +16,14 @@ def init_rna_model(seed, kl_strategy):
         num_epochs = 60,
         counts_layer= 'counts',
         kl_strategy = kl_strategy,
+	hidden = hidden
     )
     rna_model.set_learning_rates(1e-2, 2e-1)
 
     return rna_model
     
 
-def init_atac_model(seed, kl_strategy):
+def init_atac_model(seed, kl_strategy, hidden = 128):
 
     atac_model = mira.topics.AccessibilityTopicModel(
         beta=0.93,
@@ -31,6 +32,7 @@ def init_atac_model(seed, kl_strategy):
         encoder_dropout=0.07,
         num_topics = 7,
         counts_layer= 'counts',
+	hidden = hidden,
         kl_strategy = kl_strategy,
     )
     atac_model.set_learning_rates(1e-2, 2e-1)
@@ -64,13 +66,14 @@ def train(
     min_cells = 25,
     min_dispersion = 0.7,
     kl_strategy = 'monotonic',
+    hidden = 128
 ):  
     use_atac_features = not atac_data is None
     use_rna_features = not rna_data is None
 
     if use_rna_features:
 
-        rna_model = init_rna_model(seed, kl_strategy)
+        rna_model = init_rna_model(seed, kl_strategy, hidden = hidden)
         rna_data = basic_rna_preprocessing(rna_data, min_cells, min_dispersion)
 
         if tune:
@@ -85,7 +88,7 @@ def train(
 
         basic_atac_preprocessing(atac_data, min_cells)
         
-        atac_model = init_atac_model(seed, kl_strategy)
+        atac_model = init_atac_model(seed, kl_strategy, hidden = hidden)
 
         if tune:
             atac_model = tune_model(atac_data, atac_model, dataset_id+'_atac_study.pkl', **training_args)
@@ -128,18 +131,19 @@ def main(
     use_atac_features = True,
     use_rna_features = True,
     tuning_iters = 32,
-    min_topics = 5,
-    max_topics = 12,
-    max_dropout = 0.05,
-    min_epochs = 20,
-    max_epochs = 40,
+    min_topics = 7,
+    max_topics = 13,
+    max_dropout = 0.15,
+    min_epochs = 30,
+    max_epochs = 60,
     cv = 5,
     train_size=0.8,
     seed = None,
     tune = True,
     kl_strategy = 'monotonic',
     min_cells = 25,
-    min_dispersion = 0.7
+    min_dispersion = 0.7,
+    hidden = 128,
 ):
 
     training_args = dict(
@@ -173,6 +177,7 @@ def main(
         kl_strategy = kl_strategy,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
+	hidden = hidden
     )
 
     add_expression_to_dynframe(

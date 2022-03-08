@@ -1,6 +1,6 @@
 import yaml
 import os
-configfile: "frankencell/pipeline/tune_test.yaml"
+configfile: "frankencell/pipeline/2022-03-08_experiment_no_MIRA.yaml"
 prefix = config['prefix']
 
 SCAFFOLD_PATH = prefix+'scaffolds/{scaffold}.h5'
