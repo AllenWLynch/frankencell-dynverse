@@ -74,7 +74,7 @@ def train(
     dataset_id,
     training_args,
     model_args,
-    tune = True,
+    train_style = 'tune',
     min_cells = 25,
     min_dispersion = 0.7,
 ):  
@@ -86,10 +86,14 @@ def train(
         rna_model = init_rna_model(model_args)
         rna_data = basic_rna_preprocessing(rna_data, min_cells, min_dispersion)
 
-        if tune:
+        if train_style == 'tune':
             rna_model = tune_model(rna_data, rna_model, dataset_id+'_rna_study.pkl', **training_args)
-        else:
+        elif train_style == 'fit':
             rna_model.fit(rna_data)
+        elif train_style == 'load': 
+            rna_model = mira.topics.ExpressionTopicModel.load(dataset_id + '.rna-model.pth')
+        else:
+            raise ValueError('train_style="{}" not available.'.format(train_style))
 
         rna_model.predict(rna_data)
         rna_model.save(dataset_id + '.rna-model.pth')
@@ -100,10 +104,14 @@ def train(
         
         atac_model = init_atac_model(model_args)
 
-        if tune:
+        if train_style == 'tune':
             atac_model = tune_model(atac_data, atac_model, dataset_id+'_atac_study.pkl', **training_args)
-        else:
+        elif train_style == 'fit':
             atac_model.fit(atac_data)
+        elif train_style == 'load': 
+            atac_model = mira.topics.AccessibilityTopicModel.load(dataset_id + '.atac-model.pth')
+        else:
+            raise ValueError('train_style="{}" not available.'.format(train_style))
             
         atac_model.predict(atac_data)
         atac_model.save(dataset_id + '.atac-model.pth')
@@ -149,7 +157,7 @@ def main(
     cv = 5,
     train_size=0.8,
     seed = None,
-    tune = True,
+    train_style = 'tune',
     min_cells = 25,
     min_dispersion = 0.7,
     kl_strategy = 'monotonic',
@@ -191,7 +199,7 @@ def main(
         output_path,
         training_args,
         model_args,
-        tune = tune,
+        train_style = train_style,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
     )
