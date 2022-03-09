@@ -1,6 +1,6 @@
 import yaml
 import os
-configfile: "frankencell/pipeline/2022-03-08_experiment_no_MIRA.yaml"
+#configfile: "frankencell/pipeline/2022-03-08_experiment_no_MIRA.yaml"
 prefix = config['prefix']
 
 SCAFFOLD_PATH = prefix+'scaffolds/{scaffold}.h5'
@@ -121,7 +121,6 @@ wildcard_constraints:
     test="\w+",
     rep="\d+"
 
-
 rule all:
     input : targets
 
@@ -132,7 +131,13 @@ rule make_scaffold :
         SCAFFOLD_PATH
     log : SCAFFOLD_LOGS
     resources:
-        mem_mb = 100
+        mem_mb = 1000
+        cpus = 1
+    envmodules:
+        "hdf5/1.10.1",
+        "R/4.0.4"
+    conda:
+        config['conda_env']
     shell : 
         "./franken-cells-yaml scaffold {input.args}"
 
@@ -145,7 +150,13 @@ rule make_test :
         args = TEST_CONFIG
     threads : 5
     resources:
-        mem_mb = 2000
+        mem_mb = 5000
+        cpus = 5
+    conda:
+        config['conda_env']
+    envmodules:
+        "hdf5/1.10.1",
+        "R/4.0.4"
     log : TEST_LOGS
     shell : 
         "./franken-cells-yaml mix-cells {params.args}"
@@ -160,7 +171,13 @@ rule preprocess :
         args = PREPROCESS_CONFIG
     resources : 
         concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty'],
-        mem_mb = 1000
+        mem_mb = 2000
+        cpus = 1
+    conda:
+        config['conda_env']
+    envmodules:
+        "hdf5/1.10.1",
+        "R/4.0.4"
     log : PREPROCESS_LOGS
     shell : 
         "./franken-cells-yaml {params.script} {params.args}"
@@ -175,7 +192,13 @@ rule evaluate :
         args = RESULTS_CONFIG
     log : RESULTS_LOGS
     resources :
-        mem_mb = 100
+        mem_mb = 2000
+        cpus = 1
+    conda:
+        config['conda_env']
+    envmodules:
+        "hdf5/1.10.1",
+        "R/4.0.4"
     shell: 
         "./franken-cells-yaml evaluate {params.args}"
 
