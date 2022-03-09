@@ -131,7 +131,7 @@ rule make_scaffold :
         SCAFFOLD_PATH
     log : SCAFFOLD_LOGS
     resources:
-        mem_mb = 1000
+        mem_mb = 1000,
         cpus = 1
     envmodules:
         "hdf5/1.10.1",
@@ -150,7 +150,7 @@ rule make_test :
         args = TEST_CONFIG
     threads : 5
     resources:
-        mem_mb = 5000
+        mem_mb = 5000,
         cpus = 5
     conda:
         config['conda_env']
@@ -171,7 +171,7 @@ rule preprocess :
         args = PREPROCESS_CONFIG
     resources : 
         concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty'],
-        mem_mb = 2000
+        mem_mb = 2000,
         cpus = 1
     conda:
         config['conda_env']
@@ -192,7 +192,7 @@ rule evaluate :
         args = RESULTS_CONFIG
     log : RESULTS_LOGS
     resources :
-        mem_mb = 2000
+        mem_mb = 2000,
         cpus = 1
     conda:
         config['conda_env']

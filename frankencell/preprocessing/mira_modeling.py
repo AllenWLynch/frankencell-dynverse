@@ -194,7 +194,6 @@ def main(
         tune = tune,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
-	hidden = hidden
     )
 
     add_expression_to_dynframe(
