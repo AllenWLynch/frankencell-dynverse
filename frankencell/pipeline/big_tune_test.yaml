@@ -900,7 +900,6 @@ methods:
       mira_no_tune:
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: mira_no_tune
-    yeah:
       mira0:
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: 64_2_shufflesplit_08_5_1
