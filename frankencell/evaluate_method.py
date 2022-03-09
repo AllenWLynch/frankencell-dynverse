@@ -26,7 +26,9 @@ results <- dyneval::calculate_metrics(goldstandard, model,
 
 dynutils::write_h5(model, "{method_output_path}")
 
-write.csv(results, file = "{results_output_path}")
+write.table(t(results), file = "{results_output_path}", 
+    sep = "\t", col.names = FALSE, quote = FALSE)
+
     '''.format(
         path = path,
         run_file = run_file,

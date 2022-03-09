@@ -55,7 +55,7 @@ def get_valid_cells_dataset(
     ] # K, M
 
 
-def get_mixable_cells(cluster_rds, read_depths, mixing_weights):
+def get_mixable_cells(cluster_rds, read_depths, mixing_weights, rd_means, rd_stds):
 
     #D, K, M
     num_clusters = mixing_weights.shape[0]
@@ -80,20 +80,30 @@ def get_mixable_cells(cluster_rds, read_depths, mixing_weights):
                     for mode in range(num_modes)
                 ]).all(-1)
             )
-                
-        found_valid_cells = np.all(
-            [valid_cells.sum() > 0 for valid_cells in valid_cells_per_cluster]
-        )
+
+        mode_has_valid_cells = []
+        for mode in range(num_modes):
+            mode_has_valid_cells.append(
+                np.all([valid_cells[mode][cluster].any()
+                    for cluster in range(num_clusters)])
+            )
+
+        found_valid_cells = np.all([valid_cells.sum() > 0 for valid_cells in valid_cells_per_cluster])
 
         if not found_valid_cells:
-            read_depths = list(map(lambda x : 0.9*x, read_depths))
+            read_depths = [
+                rd if has_valid_cells else sample_bounded_read_depth(rd_mean, rd_std, 2.5, 10)[0]
+                for rd, has_valid_cells, rd_mean, rd_std in zip(
+                    read_depths, mode_has_valid_cells, rd_means, rd_stds
+                )
+            ]
 
-    mix_cells = [ 
+    mix_cells = [
         np.random.choice(np.argwhere(valid_cells)[:,0])
         for valid_cells in valid_cells_per_cluster
     ] #K
 
-    return mix_cells
+    return mix_cells, read_depths
 
 
 def mix_reads(*,cluster_counts, read_depths, cells, mixing_weights): #D, K, M and K
@@ -118,13 +128,16 @@ def mix_reads(*,cluster_counts, read_depths, cells, mixing_weights): #D, K, M an
 def sample_proportions(
     read_depths, mixing_weights,*,
     cluster_counts, 
-    cluster_rds):
+    cluster_rds,
+    rd_means, rd_stds):
+
+    cells, read_depths = get_mixable_cells(cluster_rds, read_depths, mixing_weights, rd_means, rd_stds)
 
     return mix_reads(
         cluster_counts = cluster_counts, 
         read_depths = read_depths, 
         mixing_weights = mixing_weights,
-        cells = get_mixable_cells(cluster_rds, read_depths, mixing_weights)
+        cells = cells
     )
 
 
@@ -224,7 +237,8 @@ def mix_frankencells(*,
             ))
     
     franken_function = partial(sample_proportions,
-            cluster_counts = cluster_counts, cluster_rds = cluster_rds)
+            cluster_counts = cluster_counts, cluster_rds = cluster_rds,
+            rd_means = rd_means, rd_stds = rd_stds)
     
     if n_jobs > 1:
         frankencells = Parallel(n_jobs=n_jobs, verbose = 0, pre_dispatch='2*n_jobs')(
