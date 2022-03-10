@@ -7,15 +7,21 @@ from shutil import copyfile
 from sklearn.model_selection import ShuffleSplit
 
 def init_rna_model(model_args):
-    rna_model = mira.topics.ExpressionTopicModel(
-        beta=0.90,
-        batch_size=32,
+
+    default_args = dict(
+        beta=0.92,
+        batch_size=64,
         encoder_dropout=0.05,
-        num_topics = 8,
+        num_topics = 7,
         decoder_dropout = 0.2,
-        num_epochs = 60,
+        num_epochs = 45,
+    )
+
+    default_args.update(model_args)
+
+    rna_model = mira.topics.ExpressionTopicModel(
         counts_layer= 'counts',
-        **model_args
+        **default_args
     )
     rna_model.set_learning_rates(1e-2, 2e-1)
 
@@ -24,24 +30,45 @@ def init_rna_model(model_args):
 
 def init_atac_model(model_args):
 
-    atac_model = mira.topics.AccessibilityTopicModel(
-        beta=0.93,
-        batch_size=32,
-        encoder_dropout=0.07,
+    default_args = dict(
+        beta=0.92,
+        batch_size=64,
+        encoder_dropout=0.05,
         num_topics = 7,
+        decoder_dropout = 0.2,
+        num_epochs = 45,
+    )
+
+    default_args.update(model_args)
+
+    atac_model = mira.topics.AccessibilityTopicModel(
         counts_layer= 'counts',
-        **model_args
+        **default_args
     )
     atac_model.set_learning_rates(1e-2, 2e-1)
     
     return atac_model
 
 
-def tune_model(adata, model, save_name, **kwargs):
+def tune_model(adata, model, save_name, tuning_args):
 
-    train_size = kwargs.pop('train_size')
-    cv = kwargs.pop('cv')
-    top_n_trials = kwargs.pop('top_n_trials')
+    default_args = dict(
+        tuning_iters = 32,
+        min_topics = 5,
+        max_topics = 13,
+        max_dropout = 0.1,
+        min_epochs = 40,
+        max_epochs = 60,
+        cv = 'shufflesplit',
+        train_size=0.9,
+        top_n_trials = 5,
+    )
+
+    default_args.update(tuning_args)
+
+    train_size = default_args.pop('train_size')
+    cv = default_args.pop('cv')
+    top_n_trials = default_args.pop('top_n_trials')
 
     if cv == 'shufflesplit':
         cv = ShuffleSplit(n_splits= 5, train_size=train_size)
@@ -50,7 +77,7 @@ def tune_model(adata, model, save_name, **kwargs):
 
     tuner = mira.topics.TopicModelTuner(
         model, save_name = save_name, cv = cv,
-        **kwargs
+        **default_args
     )
 
     if top_n_trials == 1:
@@ -72,8 +99,9 @@ def train(
     rna_data, 
     atac_data,
     dataset_id,
-    training_args,
-    model_args,
+    tuning_args,
+    rna_model_args,
+    atac_model_args,
     train_style = 'tune',
     min_cells = 25,
     min_dispersion = 0.7,
@@ -83,11 +111,11 @@ def train(
 
     if use_rna_features:
 
-        rna_model = init_rna_model(model_args)
+        rna_model = init_rna_model(rna_model_args)
         rna_data = basic_rna_preprocessing(rna_data, min_cells, min_dispersion)
 
         if train_style == 'tune':
-            rna_model = tune_model(rna_data, rna_model, dataset_id+'_rna_study.pkl', **training_args)
+            rna_model = tune_model(rna_data, rna_model, dataset_id+'_rna_study.pkl', tuning_args)
         elif train_style == 'fit':
             rna_model.fit(rna_data)
         elif train_style == 'load': 
@@ -102,10 +130,10 @@ def train(
 
         basic_atac_preprocessing(atac_data, min_cells)
         
-        atac_model = init_atac_model(model_args)
+        atac_model = init_atac_model(atac_model_args)
 
         if train_style == 'tune':
-            atac_model = tune_model(atac_data, atac_model, dataset_id+'_atac_study.pkl', **training_args)
+            atac_model = tune_model(atac_data, atac_model, dataset_id+'_atac_study.pkl', tuning_args)
         elif train_style == 'fit':
             atac_model.fit(atac_data)
         elif train_style == 'load': 
@@ -148,36 +176,13 @@ def main(
     atac_feature_type = 'ATAC',
     use_atac_features = True,
     use_rna_features = True,
-    tuning_iters = 32,
-    min_topics = 7,
-    max_topics = 13,
-    max_dropout = 0.15,
-    min_epochs = 30,
-    max_epochs = 60,
-    cv = 5,
-    train_size=0.8,
-    seed = None,
     train_style = 'tune',
     min_cells = 25,
     min_dispersion = 0.7,
-    kl_strategy = 'monotonic',
-    hidden = 128,
-    layers = 3,
-    top_n_trials = 5,
+    tuning_args = dict(),
+    rna_model_args = dict(),
+    atac_model_args = dict(),
 ):
-
-    training_args = dict(
-        iters = tuning_iters, cv = cv, 
-        min_epochs = min_epochs, max_epochs = max_epochs,
-        min_topics = min_topics, max_topics = max_topics, max_dropout = max_dropout,
-        train_size = train_size, top_n_trials = top_n_trials,
-    )
-
-    model_args = dict(
-        kl_strategy = kl_strategy, hidden = hidden, seed = seed,
-        num_layers = layers, 
-
-    )
 
     adata = read_dynframe(dynframe_path)
 
@@ -197,8 +202,9 @@ def main(
         rna_data, 
         atac_data,
         output_path,
-        training_args,
-        model_args,
+        tuning_args,
+        rna_model_args,
+        atac_model_args,
         train_style = train_style,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
