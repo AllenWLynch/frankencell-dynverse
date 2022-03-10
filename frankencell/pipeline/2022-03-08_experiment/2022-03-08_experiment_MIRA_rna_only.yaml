@@ -1,0 +1,65 @@
+
+#____PREPROCESSING____
+default_preprocessing_parameters: 
+  min_cells : 25
+  min_dispersion : 0.7
+  min_topics : 5
+  layers : 2
+  hidden : X
+  min_epochs : 40
+  max_epochs : 60
+  max_dropout : 0.15
+  top_n_trials : 5
+  train_size : 0.9
+  cv : shufflesplit
+  use_atac_features : false
+
+preprocessing:
+  mira_no_tune:
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters:
+      hidden : 128
+      train_style : fit
+  mira_monotonic:
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters:
+      hidden : 128
+      train_style : tune
+      kl_strategy : monotonic
+  mira_cyclic:
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters:
+      hidden : 128
+      train_style : tune
+      kl_strategy : cyclic
+
+
+#____METHODS____
+default_method_parameters: {}
+
+methods :
+  mira_tree:
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/run
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml
+    trials:
+      mira_no_tune:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_no_tune
+      mira_monotonic:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_monotonic
+      mira_cyclic:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_cyclic
+      mira_no_tune_log:
+        parameters: use_rep="RNA", box_cox=0
+        preprocessing: mira_no_tune
+      mira_monotonic_log:
+        parameters: use_rep="RNA", box_cox=0
+        preprocessing: mira_monotonic
+      mira_cyclic_log:
+        parameters: use_rep="RNA", box_cox=0
+        preprocessing: mira_cyclic
