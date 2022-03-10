@@ -138,7 +138,8 @@ rule make_scaffold :
     log : SCAFFOLD_LOGS
     resources:
         mem_mb = partial(scale_mem_mb, base_mem = 1000),
-        cpus = 1
+        cpus = 1,
+	time = 10,
     envmodules:
         "hdf5/1.10.1",
         "R/4.0.4"
@@ -156,8 +157,9 @@ rule make_test :
         args = TEST_CONFIG
     threads : 5
     resources:
-        mem_mb = partial(scale_mem_mb, base_mem = 5000),
-        cpus = 5
+        mem_mb = partial(scale_mem_mb, base_mem = 10000),
+        cpus = 5,
+	time = 120
     conda:
         config['conda_env']
     envmodules:
@@ -178,7 +180,8 @@ rule preprocess :
     resources : 
         concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty'],
         mem_mb = partial(scale_mem_mb, base_mem = 2000),
-        cpus = 1
+        cpus = 1,
+	time = 10
     conda:
         config['conda_env']
     envmodules:
@@ -199,7 +202,8 @@ rule evaluate :
     log : RESULTS_LOGS
     resources :
         mem_mb = partial(scale_mem_mb, base_mem = 2000),
-        cpus = 1
+        cpus = 1,
+        time = 10
     conda:
         config['conda_env']
     envmodules:
