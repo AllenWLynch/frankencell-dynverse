@@ -55,7 +55,7 @@ test_replicates : 3
 
 default_test_parameters:
   datasets:
-    - ../frankencell/data/benchmark_rna.h5ad
+    - data/benchmark_rna.h5ad
   feature_types:
     - RNA
   pure_states: [C, A, B, D]
@@ -96,6 +96,26 @@ preprocessing:
       kl_strategy : monotonic,
       hidden : 64
       layers : 2
+  mira_no_tune_64_3 :
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters:
+      use_atac_features : false
+      min_dispersion : 0.7
+      train_style : fit
+      kl_strategy : monotonic,
+      hidden : 64
+      layers : 3
+  mira_no_tune_128_3 :
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters:
+      use_atac_features : false
+      min_dispersion : 0.7
+      train_style : fit
+      kl_strategy : monotonic,
+      hidden : 128
+      layers : 3
   pca :
     script : pca-preprocess
     concurrent_job_penalty : 0
@@ -116,6 +136,12 @@ methods:
       mira_no_tune_64:
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: mira_no_tune_64
+      mira_no_tune_128_3:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_no_tune_128_3
+      mira_no_tune_64_3:
+        parameters: use_rep="RNA", box_cox=0.5
+        preprocessing: mira_no_tune_64_3
   slingshot_pca : 
     run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
     definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml

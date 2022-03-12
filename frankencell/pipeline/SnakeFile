@@ -1,7 +1,8 @@
 import yaml
 import os
-#configfile: "frankencell/pipeline/2022-03-08_experiment_no_MIRA.yaml"
+#configfile: "frankencell/pipeline/2022-03-08_experiment/2022-03-08_experiment.yaml"
 prefix = config['prefix']
+write_configs = config['write_configs']
 
 SCAFFOLD_PATH = prefix+'scaffolds/{scaffold}.h5'
 TEST_PATH = prefix+'tests/{scaffold}.{test}-{rep}.h5'
@@ -38,6 +39,9 @@ def write_test_config(config, prefix, scaffold, test, replicate):
     
     with open(TEST_CONFIG.format(
                 prefix=prefix, scaffold=scaffold, test=test, rep=replicate),'w') as f:
+
+        print(config['default_test_parameters'], config['test_conditions'][test])
+
         yaml.dump({
             **config['default_test_parameters'],
             **config['test_conditions'][test],
@@ -65,30 +69,34 @@ def write_method_config(config, prefix, scaffold, test, replicate, method,
                        trial):
     
     preprocess = config['methods'][method]['trials'][trial]['preprocessing']
-
-    write_scaffold_config(config, prefix, scaffold)
-    write_test_config(config, prefix, scaffold, test, replicate)
-    write_preprocess_config(config, prefix, scaffold, test, replicate,
-                           preprocess)
     
     result_file = RESULTS_PATH.format(scaffold=scaffold, test=test, rep=replicate,
                 preprocess=preprocess, method = method, trial = trial)
+
+    if write_configs:
+        write_scaffold_config(config, prefix, scaffold)
+        write_test_config(config, prefix, scaffold, test, replicate)
+        write_preprocess_config(config, prefix, scaffold, test, replicate,
+                           preprocess)
     
-    with open(RESULTS_CONFIG.format(
+        #reslt_file = RESULTS_PATH.format(scaffold=scaffold, test=test, rep=replicate,
+        #            preprocess=preprocess, method = method, trial = tr
+    
+        with open(RESULTS_CONFIG.format(
                 prefix=prefix, scaffold=scaffold, test=test, rep=replicate,
                 preprocess=preprocess, method=method, trial=trial),'w') as f:
-        yaml.dump({**config['default_method_parameters'],
-         'run_file' : config['methods'][method]['run_file'],
-         'definition_file' : config['methods'][method]['definition_file'],
-         'goldstandard' : SCAFFOLD_PATH.format(scaffold=scaffold),
-         'test_dataset' : PREPROCESS_PATH.format(scaffold=scaffold, test=test, preprocess=preprocess, rep=replicate),
-         'method_output_path' : EVALUATION_PATH.format(
+            yaml.dump({**config['default_method_parameters'],
+             'run_file' : config['methods'][method]['run_file'],
+             'definition_file' : config['methods'][method]['definition_file'],
+             'goldstandard' : SCAFFOLD_PATH.format(scaffold=scaffold),
+             'test_dataset' : PREPROCESS_PATH.format(scaffold=scaffold, test=test, preprocess=preprocess, rep=replicate),
+             'method_output_path' : EVALUATION_PATH.format(
                 scaffold=scaffold, test=test, 
                 preprocess=preprocess, method = method, 
                 trial = trial, rep=replicate),
-         'results_output_path' : result_file,
-         'param_string' : config['methods'][method]['trials'][trial]['parameters']
-        }, f)
+             'results_output_path' : result_file,
+             'param_string' : config['methods'][method]['trials'][trial]['parameters']
+            }, f)
         
     return result_file
 
@@ -137,9 +145,8 @@ rule make_scaffold :
         SCAFFOLD_PATH
     log : SCAFFOLD_LOGS
     resources:
-        mem_mb = partial(scale_mem_mb, base_mem = 1000),
-        cpus = 1,
-	time = 10,
+        mem_mb = partial(scale_mem_mb, base_mem = 3000),
+        cpus = 1
     envmodules:
         "hdf5/1.10.1",
         "R/4.0.4"
@@ -155,11 +162,10 @@ rule make_test :
         TEST_PATH
     params : 
         args = TEST_CONFIG
-    threads : 5
+    threads : 1
     resources:
-        mem_mb = partial(scale_mem_mb, base_mem = 10000),
-        cpus = 5,
-	time = 120
+        mem_mb = partial(scale_mem_mb, base_mem = 5000),
+        cpus = 1
     conda:
         config['conda_env']
     envmodules:
@@ -179,9 +185,8 @@ rule preprocess :
         args = PREPROCESS_CONFIG
     resources : 
         concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty'],
-        mem_mb = partial(scale_mem_mb, base_mem = 2000),
-        cpus = 1,
-	time = 10
+        mem_mb = partial(scale_mem_mb, base_mem = 4000),
+        cpus = 1
     conda:
         config['conda_env']
     envmodules:
@@ -201,9 +206,8 @@ rule evaluate :
         args = RESULTS_CONFIG
     log : RESULTS_LOGS
     resources :
-        mem_mb = partial(scale_mem_mb, base_mem = 2000),
-        cpus = 1,
-        time = 10
+        mem_mb = partial(scale_mem_mb, base_mem = 4000),
+        cpus = 1
     conda:
         config['conda_env']
     envmodules:

@@ -13,6 +13,7 @@ subparsers = parser.add_subparsers(help = 'commands')
 
 def add_arguments(parser):
     parser.add_argument('yaml', type = str)
+    #parser.add_argument('--threads', default = 1, required = False, type = int)
 
 scaffold_subparser = subparsers.add_parser('scaffold')
 add_arguments(scaffold_subparser)
