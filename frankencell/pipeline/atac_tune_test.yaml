@@ -1,0 +1,208 @@
+#____GENERAL____
+
+prefix : 'data/tune/'
+restart  : FALSE
+
+#____SCAFFOLDS____
+default_scaffold_parameters:
+  sigmoid_aggression : 6
+  n_cells : 1000
+  gamma : 0.1
+  max_depth : 3
+  max_width : 2
+  ptime_beta : 0.5
+  ptime_alpha : 1.
+
+scaffolds:
+  scaffold0:
+    state_compositions:
+    - - 1
+      - 0
+      - 0
+      - 0
+    - - 0.5
+      - 0.35
+      - 0.075
+      - 0.075
+    - - 0.2
+      - 0.2
+      - 0.30000000000000004
+      - 0.30000000000000004
+    - - 0.3
+      - 0.625
+      - 0.0375
+      - 0.0375
+    - - 0.1
+      - 0
+      - 0.7
+      - 0.2
+    - - 0.1
+      - 0
+      - 0.2
+      - 0.7
+    - - 0.1
+      - 0.9
+      - 0
+      - 0
+    - - 0.1
+      - 0.9
+      - 0
+      - 0
+
+#____TESTS____
+
+test_replicates : 3
+
+default_test_parameters:
+  datasets:
+    - data/benchmark_rna.h5ad
+  feature_types:
+    - RNA
+  pure_states: [C, A, B, D]
+  cell_state_col : cell_groups
+  n_jobs : 5
+  rd_stds : [0.45]
+
+test_conditions:
+  test1:
+    rd_means : [10000]
+  test2:
+    rd_means : [5000]
+  test3:
+    rd_means : [2500]
+
+#____PREPROCESSING____
+default_preprocessing_parameters: 
+  min_cells : 25
+
+preprocessing:
+  lsi :
+    script : lsi-preprocess
+    concurrent_job_penalty : 0
+    parameters :
+      feature_type : ATAC
+  mira_no_tune:
+    script: mira-preprocess
+    concurrent_job_penalty : 0
+    parameters:
+      tuning_args:
+        min_topics : 5
+        min_epochs : 40
+        max_epochs : 60
+        max_dropout : 0.1
+        top_n_trials : 5
+        train_size : 0.9
+        cv : shufflesplit
+      atac_model_args:
+        beta : 0.92
+        batch_size : 64
+        encoder_dropout : 0.05
+        num_topics : 7
+        decoder_dropout : 0.2
+        num_epochs : 45    
+        layers : 2
+        hidden : 64
+        embedding_size : 128
+      use_atac_features : true
+      use_rna_features : false
+      train_style : fit
+  mira_tune_2:
+    script: mira-preprocess
+    concurrent_job_penalty : 0
+    parameters:
+      tuning_args:
+        min_topics : 5
+        min_epochs : 40
+        max_epochs : 60
+        max_dropout : 0.1
+        top_n_trials : 5
+        train_size : 0.9
+        cv : shufflesplit
+      atac_model_args:
+        beta : 0.92
+        batch_size : 64
+        encoder_dropout : 0.05
+        num_topics : 7
+        decoder_dropout : 0.2
+        num_epochs : 45    
+        layers : 2
+        hidden : 64
+        embedding_size : 64
+      use_atac_features : true
+      use_rna_features : false
+      train_style : tune
+  mira_tune_3:
+    script: mira-preprocess
+    concurrent_job_penalty : 0
+    parameters:
+      tuning_args:
+        min_topics : 5
+        min_epochs : 40
+        max_epochs : 60
+        max_dropout : 0.1
+        top_n_trials : 5
+        train_size : 0.9
+        cv : shufflesplit
+      atac_model_args:
+        beta : 0.92
+        batch_size : 64
+        encoder_dropout : 0.05
+        num_topics : 7
+        decoder_dropout : 0.2
+        num_epochs : 45    
+        layers : 3
+        hidden : 64
+        embedding_size : 64
+      use_atac_features : true
+      use_rna_features : false
+      train_style : tune
+  
+
+
+default_method_parameters : {}
+
+methods:
+  slingshot_lsi : 
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/signac/run.R
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/signac/definition.yaml
+    trials:
+      allen_3_True:
+        parameters: min_dim=3, style="allen", skip_first_dim=TRUE
+        preprocessing: lsi
+      allen_4_True:
+        parameters: min_dim=4, style="allen", skip_first_dim=TRUE
+        preprocessing: lsi
+      allen_5_True:
+        parameters: min_dim=5, style="allen", skip_first_dim=TRUE
+        preprocessing: lsi
+      seurat_3_True:
+        parameters: min_dim=3, style="seurat", skip_first_dim=TRUE
+        preprocessing: lsi
+      seurat_4_True:
+        parameters: min_dim=4, style="seurat", skip_first_dim=TRUE
+        preprocessing: lsi
+      seurat_5_True:
+        parameters: min_dim=5, style="seurat", skip_first_dim=TRUE
+        preprocessing: lsi
+      signac_3_True:
+        parameters: min_dim=3, style="signac", skip_first_dim=TRUE
+        preprocessing: lsi
+      signac_4_True:
+        parameters: min_dim=4, style="signac", skip_first_dim=TRUE
+        preprocessing: lsi
+      signac_5_True:
+        parameters: min_dim=5, style="signac", skip_first_dim=TRUE
+        preprocessing: lsi
+  mira_tree:
+    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/run
+    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/mira/definition.yaml
+    trials:
+      mira_no_tune:
+        parameters: use_rep="ATAC", box_cox=0.5
+        preprocessing: mira_no_tune
+      mira_tune_2:
+        parameters: use_rep="ATAC", box_cox=0.5
+        preprocessing: mira_tune_2
+      mira_tune_3:
+        parameters: use_rep="ATAC", box_cox=0.5
+        preprocessing: mira_tune_3
