@@ -64,8 +64,6 @@ default_test_parameters:
   rd_stds : [0.45]
 
 test_conditions:
-  test1:
-    rd_means : [5000]
   test2:
     rd_means : [4000]
   test3:

@@ -1,5 +1,8 @@
 #!/liulab/alynch/projects/benchmarking_python/bin/python
 
+import sys
+sys.path.insert(0, '/liulab/alynch/projects/benchmarking/MIRA/')
+
 import anndata
 import scanpy as sc
 import mira
@@ -35,6 +38,45 @@ def get_umap_features(topics, a):
 
 def l2_norm(x):
     return x / np.linalg.norm(x, axis = 1, keepdims = True)
+
+def harmonize_end_cells(data, user_end_cells):
+    
+    sc.tl.leiden(data, resolution=0.6)
+    mira_end_cells = mira.time.find_terminal_cells(data, seed = 0, threshold=1e-2)
+    
+    def remove_self_cycles(cell_ids, cluster_ids, pseudotimes):
+
+        cell_cluster_dict = dict(zip(cell_ids, cluster_ids))
+
+        no_cycle_dict = {}
+        for term_cluster in set(cluster_ids):
+            in_cluster_cells = [(cell_id, pseudotime) for cell_id, pseudotime in zip(cell_ids, pseudotimes) if cell_cluster_dict[cell_id] == term_cluster]
+
+            max_time_cell = sorted(in_cluster_cells, key = lambda x : x[1])[-1][0]
+            no_cycle_dict[cell_cluster_dict[max_time_cell]] = max_time_cell
+
+        return no_cycle_dict
+
+    user_end_cells = remove_self_cycles(
+            user_end_cells, 
+            data.obs.loc[user_end_cells, 'leiden'].values, 
+            data[user_end_cells].obs_vector('mira_pseudotime')
+        )
+
+    
+    mira_end_cells = remove_self_cycles(
+            mira_end_cells, 
+            data.obs.loc[mira_end_cells, 'leiden'].values, 
+            data[mira_end_cells].obs_vector('mira_pseudotime')
+                                    )
+
+    end_cells = [
+        mira_end_cells[cluster] if cluster in mira_end_cells else end_cell
+        for cluster, end_cell in user_end_cells.items()
+    ]
+    
+    return end_cells
+
 
 def process_dimred(data, 
     are_topic_compositions = True, 
@@ -89,6 +131,7 @@ def run_pseudotime(data, start_cell, end_cells,
                             diffmap_coordinates_key= 'dimred',
                                 start_cell = start_cell, ka = 3)
     
+    end_cells = harmonize_end_cells(data, end_cells)
     mira.time.get_branch_probabilities(data, 
                 terminal_cells={str(t) : t for t in end_cells}
         )

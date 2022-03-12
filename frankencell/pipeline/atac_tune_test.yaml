@@ -1,6 +1,6 @@
 #____GENERAL____
 
-prefix : 'data/tune/'
+prefix : 'data/atac_tune/'
 restart  : FALSE
 
 #____SCAFFOLDS____
@@ -14,6 +14,108 @@ default_scaffold_parameters:
   ptime_alpha : 1.
 
 scaffolds:
+  scaffold4:
+    state_compositions:
+    - - 1
+      - 0
+      - 0
+      - 0
+    - - 0.5
+      - 0.25
+      - 0.125
+      - 0.125
+    - - 0.1
+      - 0.1
+      - 0.4
+      - 0.4
+    - - 0.25
+      - 0.625
+      - 0.0625
+      - 0.0625
+    - - 0
+      - 0
+      - 1
+      - 0
+    - - 0
+      - 0
+      - 0
+      - 1
+    - - 0
+      - 1
+      - 0
+      - 0
+    - - 0
+      - 1
+      - 0
+      - 0
+  scaffold3:
+    state_compositions:
+    - - 1
+      - 0
+      - 0
+      - 0
+    - - 0.5
+      - 0.3
+      - 0.1
+      - 0.1
+    - - 0.15000000000000002
+      - 0.15000000000000002
+      - 0.35
+      - 0.35
+    - - 0.275
+      - 0.625
+      - 0.05
+      - 0.05
+    - - 0.05
+      - 0
+      - 0.85
+      - 0.1
+    - - 0.05
+      - 0
+      - 0.1
+      - 0.85
+    - - 0.05
+      - 0.95
+      - 0
+      - 0
+    - - 0.05
+      - 0.95
+      - 0
+      - 0
+  scaffold2:
+    state_compositions:
+    - - 1
+      - 0
+      - 0
+      - 0
+    - - 0.5
+      - 0.325
+      - 0.0875
+      - 0.0875
+    - - 0.175
+      - 0.175
+      - 0.32499999999999996
+      - 0.32499999999999996
+    - - 0.2875
+      - 0.625
+      - 0.04375
+      - 0.04375
+    - - 0.075
+      - 0
+      - 0.775
+      - 0.15
+    - - 0.075
+      - 0
+      - 0.15
+      - 0.775
+    - - 0.075
+      - 0.925
+      - 0
+      - 0
+    - - 0.075
+      - 0.925
+      - 0
+      - 0
   scaffold0:
     state_compositions:
     - - 1
@@ -51,25 +153,23 @@ scaffolds:
 
 #____TESTS____
 
-test_replicates : 3
+test_replicates : 1
 
 default_test_parameters:
   datasets:
-    - data/benchmark_rna.h5ad
+    - data/benchmark_atac.h5ad
   feature_types:
-    - RNA
+    - ATAC
   pure_states: [C, A, B, D]
   cell_state_col : cell_groups
   n_jobs : 5
-  rd_stds : [0.45]
+  rd_stds : [0.33]
 
 test_conditions:
   test1:
     rd_means : [10000]
   test2:
-    rd_means : [5000]
-  test3:
-    rd_means : [2500]
+    rd_means : [16000]
 
 #____PREPROCESSING____
 default_preprocessing_parameters: 
@@ -100,9 +200,9 @@ preprocessing:
         num_topics : 7
         decoder_dropout : 0.2
         num_epochs : 45    
-        layers : 2
+        num_layers : 2
         hidden : 64
-        embedding_size : 128
+        embedding_size : 64
       use_atac_features : true
       use_rna_features : false
       train_style : fit
@@ -112,6 +212,7 @@ preprocessing:
     parameters:
       tuning_args:
         min_topics : 5
+        max_topics : 15
         min_epochs : 40
         max_epochs : 60
         max_dropout : 0.1
@@ -125,7 +226,7 @@ preprocessing:
         num_topics : 7
         decoder_dropout : 0.2
         num_epochs : 45    
-        layers : 2
+        num_layers : 2
         hidden : 64
         embedding_size : 64
       use_atac_features : true
@@ -150,7 +251,7 @@ preprocessing:
         num_topics : 7
         decoder_dropout : 0.2
         num_epochs : 45    
-        layers : 3
+        num_layers : 3
         hidden : 64
         embedding_size : 64
       use_atac_features : true
@@ -203,6 +304,3 @@ methods:
       mira_tune_2:
         parameters: use_rep="ATAC", box_cox=0.5
         preprocessing: mira_tune_2
-      mira_tune_3:
-        parameters: use_rep="ATAC", box_cox=0.5
-        preprocessing: mira_tune_3

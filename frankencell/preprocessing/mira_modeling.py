@@ -45,7 +45,7 @@ def init_atac_model(model_args):
         counts_layer= 'counts',
         **default_args
     )
-    atac_model.set_learning_rates(1e-2, 2e-1)
+    atac_model.set_learning_rates(5e-3, 1e-1)
     
     return atac_model
 
@@ -53,7 +53,7 @@ def init_atac_model(model_args):
 def tune_model(adata, model, save_name, tuning_args):
 
     default_args = dict(
-        tuning_iters = 32,
+        iters = 32,
         min_topics = 5,
         max_topics = 13,
         max_dropout = 0.1,
@@ -147,12 +147,16 @@ def train(
 
     if use_rna_features and not use_atac_features:
         X = [rna_data.obsm['X_topic_compositions'], np.zeros((len(rna_data), 1))]
+        rna_data.obsm['X_topic_compositions'] = np.hstack(X)
+        return rna_data
     elif use_atac_features and not use_rna_features:
-        X = [np.zeros((len(rna_data), 1)), atac_data.obsm['X_topic_compositions']]
+        X = [np.zeros((len(atac_data), 1)), atac_data.obsm['X_topic_compositions']]
+        atac_data.obsm['X_topic_compositions'] = np.hstack(X)
+        return atac_data
     else:
         X = [rna_data.obsm['X_topic_compositions'], np.zeros((len(rna_data), 1)), atac_data.obsm['X_topic_compositions']]
-    rna_data.obsm['X_topic_compositions'] = np.hstack(X)
-    return rna_data
+        rna_data.obsm['X_topic_compositions'] = np.hstack(X)
+        return rna_data
 
 
 def redundant_load(adata, feature_type, enforce_typing = True):
