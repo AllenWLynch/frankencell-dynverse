@@ -231,9 +231,9 @@ default_test_parameters:
   feature_types:
     - RNA
     - ATAC
+  n_jobs : 1
   pure_states: [C, A, B, D]
   cell_state_col : cell_groups
-  n_jobs : 5
   rd_stds : [0.45, 0.33]
 
 test_conditions:
