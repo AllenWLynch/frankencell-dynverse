@@ -16,6 +16,7 @@ default_scaffold_parameters :
 
 scaffolds:
   scaffold0:
+    seed : 2556
     state_compositions:
     - - 1
       - 0
@@ -50,6 +51,7 @@ scaffolds:
       - 0
       - 0
   scaffold1:
+    seed : 2557
     state_compositions:
     - - 1
       - 0
@@ -84,6 +86,7 @@ scaffolds:
       - 0
       - 0
   scaffold2:
+    seed : 2558
     state_compositions:
     - - 1
       - 0
@@ -118,6 +121,7 @@ scaffolds:
       - 0
       - 0
   scaffold3:
+    seed : 2559
     state_compositions:
     - - 1
       - 0
@@ -152,6 +156,7 @@ scaffolds:
       - 0
       - 0
   scaffold4:
+    seed : 2560
     state_compositions:
     - - 1
       - 0
