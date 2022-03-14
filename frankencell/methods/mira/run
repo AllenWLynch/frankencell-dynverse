@@ -71,7 +71,7 @@ def harmonize_end_cells(data, user_end_cells):
                                     )
 
     end_cells = [
-        mira_end_cells[cluster] if cluster in mira_end_cells else end_cell
+        end_cell #mira_end_cells[cluster] if cluster in mira_end_cells else end_cell
         for cluster, end_cell in user_end_cells.items()
     ]
     
@@ -128,10 +128,12 @@ def run_pseudotime(data, start_cell, end_cells,
 
     mira.time.get_connected_components(data, key = 'connectivities')
     mira.time.get_transport_map(data, diffmap_distances_key='distances',
-                            diffmap_coordinates_key= 'dimred',
+                            diffmap_coordinates_key= 'embedding_features',
                                 start_cell = start_cell, ka = 3)
     
     end_cells = harmonize_end_cells(data, end_cells)
+    print(end_cells)
+
     mira.time.get_branch_probabilities(data, 
                 terminal_cells={str(t) : t for t in end_cells}
         )
