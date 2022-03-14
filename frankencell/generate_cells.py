@@ -214,6 +214,13 @@ def format_dynverse_dataset(*,
             branch_progressions.groupby('branch_id')['percentage'].transform(max) == branch_progressions['percentage']
         ].set_index('branch_id').loc[[str(x) for x in tree.nodes() if tree.out_degree(x)==0]].cell_id.values
 
+    is_start_cell = start_cell == cell_ids
+    if len(end_cells) == 1:
+        is_end_cell = end_cells[0] == cell_ids
+    else:
+        is_end_cell = np.isin(cell_ids, end_cells)
+
+
     trajectory = dyn.wrap_data(cell_ids = cell_ids)\
             .add_branch_trajectory(
                 branch_network = branch_network,
@@ -228,7 +235,9 @@ def format_dynverse_dataset(*,
     trajectory.write_output(output_path)
 
     write_cell_info(output_path, {
-        'mix_weight_' + str(i) : mixing_weights[:, i] for i in range(mixing_weights.shape[1])
+        **{'mix_weight_' + str(i) : mixing_weights[:, i] for i in range(mixing_weights.shape[1])},
+        'is_end_cell' : is_end_cell,
+        'is_start_cell' : is_start_cell
     })
 
     logging.info('Wrote dynverse dataset: ' + output_path)

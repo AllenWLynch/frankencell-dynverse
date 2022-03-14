@@ -1,4 +1,6 @@
 from ast import parse
+from asyncore import read
+from contextlib import redirect_stderr
 from typing_extensions import Required
 from scipy.stats import multivariate_hypergeom, lognorm
 from scipy import sparse
@@ -92,7 +94,7 @@ def get_mixable_cells(cluster_rds, read_depths, mixing_weights, rd_means, rd_std
 
         if not found_valid_cells:
             read_depths = [
-                rd if has_valid_cells else sample_bounded_read_depth(rd_mean, rd_std, 2.5, 10)[0]
+                rd if has_valid_cells else sample_bounded_read_depth(rd_mean, rd_std, 2.5, 10, np.zeros(10).astype(bool))[0]
                 for rd, has_valid_cells, rd_mean, rd_std in zip(
                     read_depths, mode_has_valid_cells, rd_means, rd_stds
                 )
@@ -147,7 +149,7 @@ def get_bounded_counts(exp_mean, std, max_std, lower = True):
     )
 
 
-def sample_bounded_read_depth(exp_mean, std, max_std, n_cells):
+def sample_bounded_read_depth(exp_mean, std, max_std, n_cells, is_special_cell):
 
     min_counts, max_counts = get_bounded_counts(exp_mean, std, max_std, lower=True),\
             get_bounded_counts(exp_mean, std, max_std, lower=False)
@@ -160,6 +162,8 @@ def sample_bounded_read_depth(exp_mean, std, max_std, n_cells):
 
         if allowed_samples.sum() >= n_cells:
             read_depths = samples[np.random.choice(np.argwhere(allowed_samples)[:,0], size = n_cells)]
+            redirected_read_depth = int(exp_mean) + np.random.randint(-10,10, is_special_cell.sum())
+            read_depths[is_special_cell] = redirected_read_depth
             return read_depths
         else:
             mult +=1
@@ -227,7 +231,7 @@ def mix_frankencells(*,
     np.random.seed(seed)
 
     required_read_depths = list(zip(*[
-        sample_bounded_read_depth(mean, std, max_std, len(mixing_weights))
+        sample_bounded_read_depth(mean, std, max_std, len(mixing_weights), cell_info.is_end_cell | cell_info.is_start_cell)
         for mean, std in zip(rd_means, rd_stds)
     ]))
 
