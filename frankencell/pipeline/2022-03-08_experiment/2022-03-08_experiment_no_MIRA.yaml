@@ -20,8 +20,8 @@ default_method_parameters: {}
 
 methods :
   slingshot_pca : 
-    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
-    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml
+    run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/custom_slingshot/run.R
+    definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/custom_slingshot/definition.yaml
     trials:
       min_dim_3:
         parameters: min_dim=3
@@ -33,8 +33,8 @@ methods :
         parameters: min_dim=5
         preprocessing: pca
   slingshot_lsi : 
-    run_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/signac/run.R
-    definition_file : /liulab/alynch/projects/benchmarking/frankencell-dynverse/frankencell/methods/signac/definition.yaml
+    run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/signac/run.R
+    definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/signac/definition.yaml
     trials:
       allen_3_True:
         parameters: min_dim=3, style="allen", skip_first_dim=TRUE

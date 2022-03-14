@@ -40,7 +40,7 @@ def write_test_config(config, prefix, scaffold, test, replicate):
     with open(TEST_CONFIG.format(
                 prefix=prefix, scaffold=scaffold, test=test, rep=replicate),'w') as f:
 
-        print(config['default_test_parameters'], config['test_conditions'][test])
+        #print(config['default_test_parameters'], config['test_conditions'][test])
 
         yaml.dump({
             **config['default_test_parameters'],
