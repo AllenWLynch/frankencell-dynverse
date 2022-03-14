@@ -58,3 +58,10 @@ parameters:
 - id : are_topic_compositions
   default : TRUE
   type : logical
+- id : ka
+  default : 10
+  type : integer
+  distribution:
+    lower : 5
+    upper: 25
+    type : expuniform

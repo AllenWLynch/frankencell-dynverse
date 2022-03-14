@@ -119,7 +119,7 @@ def process_dimred(data,
 
 
 def run_pseudotime(data, start_cell, end_cells,
-    threshold = 0.58, n_neighbors = 15, metric = 'manhattan'):
+    threshold = 0.58, n_neighbors = 30, ka = 10, metric = 'manhattan'):
 
     sc.pp.neighbors(data, use_rep='embedding_features', metric=metric,
         n_neighbors=n_neighbors)
@@ -129,10 +129,9 @@ def run_pseudotime(data, start_cell, end_cells,
     mira.time.get_connected_components(data, key = 'connectivities')
     mira.time.get_transport_map(data, diffmap_distances_key='distances',
                             diffmap_coordinates_key= 'embedding_features',
-                                start_cell = start_cell, ka = 3)
+                                start_cell = start_cell, ka = ka)
     
     end_cells = harmonize_end_cells(data, end_cells)
-    print(end_cells)
 
     mira.time.get_branch_probabilities(data, 
                 terminal_cells={str(t) : t for t in end_cells}
@@ -156,7 +155,10 @@ def format_results(adata):
         }
 
         def progress(state, time):
-            return (time - branch_start_time[state])/(branch_end_time[state] - branch_start_time[state])
+            return np.clip(
+                (time - branch_start_time[state])/(branch_end_time[state] - branch_start_time[state]),
+                a_min = 0, a_max = 1.
+            )
 
         percentage = np.array(
             [progress(state, time) 
