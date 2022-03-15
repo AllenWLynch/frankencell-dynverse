@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import os
 import dynclipy as dyn
+from sklearn.neighbors import KNeighborsClassifier
 
 def centered_boxcox_transform(x, a = 'log'):
 
@@ -41,41 +42,52 @@ def l2_norm(x):
 
 def harmonize_end_cells(data, user_end_cells):
     
-    sc.tl.leiden(data, resolution=0.6)
-    mira_end_cells = mira.time.find_terminal_cells(data, seed = 0, threshold=1e-2)
+    mira_end_cells = mira.time.find_terminal_cells(data, seed = 0, threshold=1e-2, iterations = 10)
     
-    def remove_self_cycles(cell_ids, cluster_ids, pseudotimes):
-
-        cell_cluster_dict = dict(zip(cell_ids, cluster_ids))
-
-        no_cycle_dict = {}
-        for term_cluster in set(cluster_ids):
-            in_cluster_cells = [(cell_id, pseudotime) for cell_id, pseudotime in zip(cell_ids, pseudotimes) if cell_cluster_dict[cell_id] == term_cluster]
-
-            max_time_cell = sorted(in_cluster_cells, key = lambda x : x[1])[-1][0]
-            no_cycle_dict[cell_cluster_dict[max_time_cell]] = max_time_cell
-
-        return no_cycle_dict
-
-    user_end_cells = remove_self_cycles(
-            user_end_cells, 
-            data.obs.loc[user_end_cells, 'leiden'].values, 
-            data[user_end_cells].obs_vector('mira_pseudotime')
-        )
-
+    data.uns['mira_end_cells'] = mira_end_cells
+    data.uns['user_end_cells'] = user_end_cells
     
-    mira_end_cells = remove_self_cycles(
-            mira_end_cells, 
-            data.obs.loc[mira_end_cells, 'leiden'].values, 
-            data[mira_end_cells].obs_vector('mira_pseudotime')
-                                    )
-
-    end_cells = [
-        end_cell #mira_end_cells[cluster] if cluster in mira_end_cells else end_cell
-        for cluster, end_cell in user_end_cells.items()
-    ]
+    term_cells = list(np.intersect1d(mira_end_cells, user_end_cells))
+    mira_end_cells = [x for x in mira_end_cells if not x in term_cells]
+    user_end_cells = [x for x in user_end_cells if not x in term_cells]
     
-    return end_cells
+    n_user, n_mira = len(user_end_cells), len(mira_end_cells)
+    n_cells = n_user + n_mira
+    all_cells = list(user_end_cells) + list(mira_end_cells)
+    
+    no_mira_connections_mask = np.vstack([
+        np.ones((n_user, n_user + n_mira)),
+        np.hstack([
+                np.ones((n_mira, n_user)), np.zeros((n_mira, n_mira))
+            ])
+        ])
+    
+    dist_matrix = pairwise_distances(
+        np.vstack([
+            data[user_end_cells].obsm['embedding_features'], 
+            data[mira_end_cells].obsm['embedding_features']]), 
+        metric = 'manhattan')
+
+    adj = pd.DataFrame(np.exp(-dist_matrix**2/(2*np.mean(dist_matrix))) * (1-np.eye(n_cells)) * no_mira_connections_mask, 
+                       columns = all_cells, index = all_cells)
+    
+    NNs = pd.Series(index = adj.columns, data = adj.columns[adj.values.argmax(0)])
+    is_mnn = NNs[NNs.values].values == NNs.index
+    
+    for m1, m2 in NNs[is_mnn].items():
+        if m1 in user_end_cells and m2 in user_end_cells:
+            if data[m1].obs.mira_pseudotime[0] > data[m2].obs.mira_pseudotime[0]:
+                term_cells.append(m1)
+            else:
+                term_cells.append(m2)
+        elif m1 in mira_end_cells and m2 in mira_end_cells:
+            pass
+        elif m1 in mira_end_cells:
+            term_cells.append(m1)
+        else:
+            term_cells.append(m2)
+
+    return list(set(term_cells))
 
 
 def process_dimred(data, 
@@ -118,17 +130,41 @@ def process_dimred(data,
         data.obsm['embedding_features'] = data.obsm['dimred']
 
 
-def run_pseudotime(data, start_cell, end_cells,
-    threshold = 0.58, n_neighbors = 30, ka = 10, metric = 'manhattan'):
+def extend_classifications(data):
+    
+    maybe_root = data.obs.tree_states.str.split(',').str.len() == data.obs.tree_states.str.split(',').str.len().max()
+    
+    tree = data.uns['connectivities_tree']
+    min_split = np.where(tree <= 0, np.inf, tree).min()
+    
+    extend = maybe_root & (data.obs.mira_pseudotime > min_split)
+    
+    if extend.sum() > 0:
+        features = data.obsm['embedding_features']
+        imputed_state = KNeighborsClassifier(30)\
+            .fit(features[~extend], data[~extend].obs.tree_states.values)\
+            .predict(features[extend])
+        
+        data.obs['tree_states'][extend] = imputed_state
+
+
+def run_pseudotime(data, start_cell, end_cells, ka = 5, 
+    threshold = 0.58, n_neighbors = 30, metric = 'manhattan'):
 
     sc.pp.neighbors(data, use_rep='embedding_features', metric=metric,
         n_neighbors=n_neighbors)
 
     sc.tl.umap(data, min_dist = 0.1, negative_sample_rate=1)
+    
+    sc.tl.diffmap(data, n_comps=10)
+    mira.time.normalize_diffmap(data)
+  
+    data.obsm['X_diffmap'] = data.obsm['X_diffmap'][:,:data.uns['eigen_gap'].argmax()]
+    sc.pp.neighbors(data, use_rep = 'X_diffmap', key_added = 'X_diffmap',
+                   n_neighbors = n_neighbors)
 
-    mira.time.get_connected_components(data, key = 'connectivities')
-    mira.time.get_transport_map(data, diffmap_distances_key='distances',
-                            diffmap_coordinates_key= 'embedding_features',
+    mira.time.get_connected_components(data)
+    mira.time.get_transport_map(data,
                                 start_cell = start_cell, ka = ka)
     
     end_cells = harmonize_end_cells(data, end_cells)
@@ -138,6 +174,8 @@ def run_pseudotime(data, start_cell, end_cells,
         )
 
     mira.time.get_tree_structure(data, threshold = threshold)
+    
+    extend_classifications(data)
 
 
 def format_results(adata):
