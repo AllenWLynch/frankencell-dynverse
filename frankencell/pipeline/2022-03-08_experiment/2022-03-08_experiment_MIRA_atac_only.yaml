@@ -3,6 +3,7 @@
 default_preprocessing_parameters: 
   use_atac_features : true
   use_rna_features : false
+  peak_subset : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/data/filtered_peaks.bed
   tuning_args:
     min_topics : 5
     min_epochs : 40
@@ -24,36 +25,24 @@ default_preprocessing_parameters:
     seed : 2556
 
 preprocessing:
-  mira_no_tune_ATAC_m25:
+  mira_no_tune_ATAC_m20:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
-      min_cells : 25
+      min_cells : 20
+  mira_no_tune_ATAC_m30:
+    script : mira-preprocess
+    concurrent_job_penalty : 1
+    parameters:
+      train_style : fit
+      min_cells : 30
   mira_no_tune_ATAC_m35:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
       min_cells : 35
-  mira_no_tune_ATAC_m50:
-    script : mira-preprocess
-    concurrent_job_penalty : 1
-    parameters:
-      train_style : fit
-      min_cells : 50
-  mira_no_tune_ATAC_m100:
-    script : mira-preprocess
-    concurrent_job_penalty : 1
-    parameters:
-      train_style : fit
-      min_cells : 100
-  mira_tune_ATAC:
-    script : mira-preprocess
-    concurrent_job_penalty : 1
-    parameters:
-      train_style : tune
-      min_cells : 25
   mira_load_joint : 
     script : mira-preprocess
     concurrent_job_penalty : 1
@@ -72,28 +61,19 @@ methods :
     run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/run
     definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/definition.yaml
     trials:
-      mira_tune_30_ATAC_log : 
-        parameters: use_rep="ATAC", box_cox=0
-        preprocessing: mira_tune_ATAC
-      mira_no_tune_ATAC_m25:
-        parameters: use_rep="ATAC", box_cox=0.5
+      mira_no_tune_ATAC_m20:
+        parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_no_tune_ATAC_m25
-      mira_no_tune_ATAC_m35:
-        parameters: use_rep="ATAC", box_cox=0.5
+      mira_no_tune_ATAC_m30:
+        parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_no_tune_ATAC_m35
       mira_no_tune_ATAC_m35:
-        parameters: use_rep="ATAC", box_cox=0.5
+        parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_no_tune_ATAC_m35
-      mira_no_tune_ATAC_m50:
-        parameters: use_rep="ATAC", box_cox=0.5
-        preprocessing: mira_no_tune_ATAC_m50
-      mira_no_tune_ATAC_m100:
-        parameters: use_rep="ATAC", box_cox=0.5
-        preprocessing: mira_no_tune_ATAC_m100
       mira_JOINT : 
-        parameters: use_rep="joint"
+        parameters: use_rep="joint", box_cox=0.25
         preprocessing: mira_load_joint
       mira_JOINT_CONSTRAINED :
-        parameters: use_rep="joint_constrained"
+        parameters: use_rep="joint_constrained", box_cox=0.25
         preprocessing: mira_load_joint
 

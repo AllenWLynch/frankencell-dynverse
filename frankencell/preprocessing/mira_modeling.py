@@ -113,6 +113,7 @@ def train(
     min_dispersion = 0.7,
     rna_prefix = None,
     atac_prefix = None,
+    peak_subset = None,
 ):  
     use_atac_features = not atac_data is None
     use_rna_features = not rna_data is None
@@ -137,7 +138,8 @@ def train(
     
     if use_atac_features:
 
-        basic_atac_preprocessing(atac_data, min_cells)
+        basic_atac_preprocessing(atac_data, min_cells,
+            peak_subset = peak_subset)
         
         atac_model = init_atac_model(atac_model_args)
 
@@ -198,6 +200,7 @@ def main(
     atac_model_args = dict(),
     rna_prefix = None,
     atac_prefix = None,
+    peak_subset = None,
 ):
 
     adata = read_dynframe(dynframe_path)
@@ -226,6 +229,7 @@ def main(
         min_dispersion = min_dispersion,
         rna_prefix = rna_prefix,
         atac_prefix = atac_prefix,
+        peak_subset = peak_subset,
     )
 
     add_expression_to_dynframe(

@@ -157,7 +157,7 @@ def run_pseudotime(data, start_cell, end_cells, ka = 5,
 
     sc.tl.umap(data, min_dist = 0.1, negative_sample_rate=1)
     
-    sc.tl.diffmap(data, n_comps=10)
+    sc.tl.diffmap(data, n_comps=9)
     mira.time.normalize_diffmap(data)
   
     data.obsm['X_diffmap'] = data.obsm['X_diffmap'][:,:data.uns['eigen_gap'][3:].argmax() + 3]
