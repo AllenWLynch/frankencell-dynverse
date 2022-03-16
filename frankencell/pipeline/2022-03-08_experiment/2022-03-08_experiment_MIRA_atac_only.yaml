@@ -29,30 +29,31 @@ preprocessing:
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
-        min_cells : 25
+      min_cells : 25
   mira_no_tune_ATAC_m35:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
-        min_cells : 35
+      min_cells : 35
   mira_no_tune_ATAC_m50:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
-        min_cells : 50
+      min_cells : 50
   mira_no_tune_ATAC_m100:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
-        min_cells : 100
+      min_cells : 100
   mira_tune_ATAC:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : tune
+      min_cells : 25
   mira_load_joint : 
     script : mira-preprocess
     concurrent_job_penalty : 1

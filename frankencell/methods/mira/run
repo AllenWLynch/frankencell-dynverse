@@ -160,7 +160,7 @@ def run_pseudotime(data, start_cell, end_cells, ka = 5,
     sc.tl.diffmap(data, n_comps=10)
     mira.time.normalize_diffmap(data)
   
-    data.obsm['X_diffmap'] = data.obsm['X_diffmap'][:,:data.uns['eigen_gap'].argmax()]
+    data.obsm['X_diffmap'] = data.obsm['X_diffmap'][:,:data.uns['eigen_gap'][3:].argmax() + 3]
     sc.pp.neighbors(data, use_rep = 'X_diffmap', key_added = 'X_diffmap',
                    n_neighbors = n_neighbors)
 
