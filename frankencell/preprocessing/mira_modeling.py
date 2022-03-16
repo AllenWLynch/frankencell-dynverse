@@ -5,6 +5,7 @@ from frankencell.utils import read_dynframe, select_features, write_cell_info, a
 import logging
 from shutil import copyfile
 from sklearn.model_selection import ShuffleSplit
+import os
 
 def init_rna_model(model_args):
 
@@ -95,6 +96,11 @@ def tune_model(adata, model, save_name, tuning_args):
 
     return best_model
 
+def parse_dataset_name(dataset_id, model_prefix, type):
+
+    return os.path.join(os.path.dirname(dataset_id),
+        '.'.join(os.path.basename(dataset_id).split('.')[0:2]) + '.' + model_prefix + '.h5.{}-model.pth'.format(type.lower()))
+
 def train(
     rna_data, 
     atac_data,
@@ -105,6 +111,8 @@ def train(
     train_style = 'tune',
     min_cells = 25,
     min_dispersion = 0.7,
+    rna_prefix = None,
+    atac_prefix = None,
 ):  
     use_atac_features = not atac_data is None
     use_rna_features = not rna_data is None
@@ -119,7 +127,8 @@ def train(
         elif train_style == 'fit':
             rna_model.fit(rna_data)
         elif train_style == 'load': 
-            rna_model = mira.topics.ExpressionTopicModel.load(dataset_id + '.rna-model.pth')
+            model_path = parse_dataset_name(dataset_id, rna_prefix, 'rna')
+            rna_model = mira.topics.ExpressionTopicModel.load(model_path)
         else:
             raise ValueError('train_style="{}" not available.'.format(train_style))
 
@@ -137,7 +146,8 @@ def train(
         elif train_style == 'fit':
             atac_model.fit(atac_data)
         elif train_style == 'load': 
-            atac_model = mira.topics.AccessibilityTopicModel.load(dataset_id + '.atac-model.pth')
+            model_path = parse_dataset_name(dataset_id, atac_prefix, 'atac')
+            atac_model = mira.topics.AccessibilityTopicModel.load(model_path)
         else:
             raise ValueError('train_style="{}" not available.'.format(train_style))
             
@@ -186,6 +196,8 @@ def main(
     tuning_args = dict(),
     rna_model_args = dict(),
     atac_model_args = dict(),
+    rna_prefix = None,
+    atac_prefix = None,
 ):
 
     adata = read_dynframe(dynframe_path)
@@ -212,6 +224,8 @@ def main(
         train_style = train_style,
         min_cells = min_cells,
         min_dispersion = min_dispersion,
+        rna_prefix = rna_prefix,
+        atac_prefix = atac_prefix,
     )
 
     add_expression_to_dynframe(
