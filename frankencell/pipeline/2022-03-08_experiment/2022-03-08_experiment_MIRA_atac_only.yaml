@@ -44,8 +44,8 @@ methods :
     run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/run
     definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/definition.yaml
     trials:
-      mira_tune_30_ATAC : 
-        parameters: use_rep="ATAC", box_cox=0.5
+      mira_tune_30_ATAC_log : 
+        parameters: use_rep="ATAC", box_cox=0
         preprocessing: mira_tune_ATAC
       mira_no_tune_30_ATAC:
         parameters: use_rep="ATAC", box_cox=0.5

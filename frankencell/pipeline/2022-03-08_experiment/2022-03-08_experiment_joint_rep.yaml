@@ -68,6 +68,7 @@ methods :
       mira_JOINT_CONSTRAINED :
         parameters: use_rep="joint_constrained"
         preprocessing: mira_load_joint
+    yeah:
       mira_RNA_only : 
         parameters: use_rep="RNA"
         preprocessing : mira_tune

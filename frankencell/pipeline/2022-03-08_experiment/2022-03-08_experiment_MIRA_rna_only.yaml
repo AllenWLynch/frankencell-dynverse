@@ -44,7 +44,7 @@ methods :
     run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/run
     definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/definition.yaml
     trials:
-      mira_tune_30 : 
+      mira_tune_diffmap : 
         parameters: use_rep="RNA", box_cox=0.5
         preprocessing: mira_tune
     yeah:
