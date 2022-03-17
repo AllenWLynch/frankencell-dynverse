@@ -4,14 +4,14 @@ default_preprocessing_parameters: {}
 preprocessing:
   pca :
     script : pca-preprocess
-    concurrent_job_penalty : 0
+    mem : 1000
     parameters:
       min_dispersion : 0.7
       min_cells : 25
       feature_type : RNA
   lsi :
     script : lsi-preprocess
-    concurrent_job_penalty : 0
+    mem : 2000
     parameters :
       feature_type : ATAC
       min_cells : 30

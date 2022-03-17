@@ -14,16 +14,8 @@ def basic_rna_preprocessing(adata, min_cells, min_dispersion):
     return adata
 
 
-def basic_atac_preprocessing(adata, min_cells, peak_subset = None):
+def basic_atac_preprocessing(adata, min_cells):
 
-    if not peak_subset is None:
-        with open(peak_subset, 'r') as f:
-            peaks = [x.strip() for x in f]
-
-        adata = adata[:, peaks]       
-
-    adata = adata.copy()
     sc.pp.filter_genes(adata, min_cells = min_cells)
 
-    print(adata.shape)
     return adata

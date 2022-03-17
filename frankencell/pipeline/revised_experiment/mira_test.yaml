@@ -36,7 +36,7 @@ default_preprocessing_parameters:
 preprocessing:
   mira_notune_RNA:
     script : mira-preprocess
-    concurrent_job_penalty : 1
+    mem : 1000
     parameters:
       train_style : fit
       use_atac_features : false
@@ -44,12 +44,12 @@ preprocessing:
       min_cells : 25
   mira_notune_ATAC:
     script : mira-preprocess
-    concurrent_job_penalty : 1
+    mem : 3000
     parameters:
       train_style : fit
       use_atac_features : true
       use_rna_features : false
-      min_cells : 25
+      min_cells : 35
 
 #____METHODS____
 default_method_parameters: {}

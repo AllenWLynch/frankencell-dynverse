@@ -122,8 +122,9 @@ def set_up_trials(config):
 targets = set_up_trials(config)
 
 
-def scale_mem_mb(wildcards, attempt, base_mem = 1000):
-    return base_mem * attempt
+def scale_mem_mb(wildcards, threads, base_mem = 2000, thread_mem = 1000):
+    return base_mem + threads * thread_mem
+
 from functools import partial
 
 
@@ -145,8 +146,7 @@ rule make_scaffold :
         SCAFFOLD_PATH
     log : SCAFFOLD_LOGS
     resources:
-        mem_mb = partial(scale_mem_mb, base_mem = 3000),
-        cpus = 1
+        local_mem = 500
     envmodules:
         "hdf5/1.10.1",
         "R/4.0.4"
@@ -162,10 +162,9 @@ rule make_test :
         TEST_PATH
     params : 
         args = TEST_CONFIG
-    threads : 1
+    threads : 10
     resources:
-        mem_mb = partial(scale_mem_mb, base_mem = 5000),
-        cpus = 1
+        local_mem = partial(scale_mem_mb, base_mem = 2000, thread_mem = 1000)
     conda:
         config['conda_env']
     envmodules:
@@ -173,7 +172,7 @@ rule make_test :
         "R/4.0.4"
     log : TEST_LOGS
     shell : 
-        "./franken-cells-yaml mix-cells {params.args}"
+        "./franken-cells-yaml mix-cells {params.args} -j {threads}"
 
 rule preprocess : 
     input : 
@@ -184,9 +183,7 @@ rule preprocess :
         script = lambda w : config['preprocessing'][w.preprocess]['script'],
         args = PREPROCESS_CONFIG
     resources : 
-        concurrent_jobs = lambda w : config['preprocessing'][w.preprocess]['concurrent_job_penalty'],
-        mem_mb = partial(scale_mem_mb, base_mem = 4000),
-        cpus = 1
+        local_mem = lambda w : config['preprocessing'][w.preprocess]['mem'],
     conda:
         config['conda_env']
     envmodules:
@@ -206,8 +203,7 @@ rule evaluate :
         args = RESULTS_CONFIG
     log : RESULTS_LOGS
     resources :
-        mem_mb = partial(scale_mem_mb, base_mem = 4000),
-        cpus = 1
+        local_mem = 1000
     conda:
         config['conda_env']
     envmodules:
