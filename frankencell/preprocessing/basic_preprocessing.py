@@ -18,11 +18,11 @@ def basic_atac_preprocessing(adata, min_cells, peak_subset = None):
 
     if not peak_subset is None:
         with open(peak_subset, 'r') as f:
-            peaks = ['{}:{}-{}'.format(*x.strip().split('\t')) for x in f]
+            peaks = [x.strip() for x in f]
 
         adata = adata[:, peaks]       
 
-    print(adata.shape)
+    adata = adata.copy()
     sc.pp.filter_genes(adata, min_cells = min_cells)
 
     print(adata.shape)

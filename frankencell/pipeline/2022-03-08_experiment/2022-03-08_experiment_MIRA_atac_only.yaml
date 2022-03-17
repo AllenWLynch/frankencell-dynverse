@@ -66,10 +66,11 @@ methods :
         preprocessing: mira_no_tune_ATAC_m25
       mira_no_tune_ATAC_m30:
         parameters: use_rep="ATAC", box_cox=0.25
-        preprocessing: mira_no_tune_ATAC_m35
+        preprocessing: mira_no_tune_ATAC_m30
       mira_no_tune_ATAC_m35:
         parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_no_tune_ATAC_m35
+    yeah:
       mira_JOINT : 
         parameters: use_rep="joint", box_cox=0.25
         preprocessing: mira_load_joint
