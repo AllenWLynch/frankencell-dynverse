@@ -25,12 +25,12 @@ default_preprocessing_parameters:
     seed : 2556
 
 preprocessing:
-  mira_no_tune_ATAC_m20:
+  mira_no_tune_ATAC_m25:
     script : mira-preprocess
     concurrent_job_penalty : 1
     parameters:
       train_style : fit
-      min_cells : 20
+      min_cells : 25
   mira_no_tune_ATAC_m30:
     script : mira-preprocess
     concurrent_job_penalty : 1
@@ -61,15 +61,16 @@ methods :
     run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/run
     definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/definition.yaml
     trials:
-      mira_no_tune_ATAC_m20:
+      mira_no_tune_ATAC_m25:
         parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_no_tune_ATAC_m25
       mira_no_tune_ATAC_m30:
         parameters: use_rep="ATAC", box_cox=0.25
-        preprocessing: mira_no_tune_ATAC_m35
+        preprocessing: mira_no_tune_ATAC_m30
       mira_no_tune_ATAC_m35:
         parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_no_tune_ATAC_m35
+    yeah:
       mira_JOINT : 
         parameters: use_rep="joint", box_cox=0.25
         preprocessing: mira_load_joint
