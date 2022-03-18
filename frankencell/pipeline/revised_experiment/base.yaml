@@ -193,19 +193,18 @@ scaffolds:
 
 #____TESTS____
 
-test_replicates : 1
+test_replicates : 5
 
 default_test_parameters:
   datasets:
-    - revised_rna.h5ad
-    - revised_atac.h5ad
+    - data/revised_rna.h5ad
+    - data/revised_atac.h5ad
   feature_types:
     - RNA
     - ATAC
-  n_jobs : 1
   pure_states: [C, A, B, D]
   cell_state_col : cell_groups
-  rd_stds : [0.45, 0.33]
+  rd_stds : [0.33, 0.26]
 
 test_conditions:
   test3 : 

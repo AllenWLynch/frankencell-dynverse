@@ -65,9 +65,9 @@ def harmonize_end_cells(data, user_end_cells):
     
     dist_matrix = pairwise_distances(
         np.vstack([
-            data[user_end_cells].obsm['embedding_features'], 
-            data[mira_end_cells].obsm['embedding_features']]), 
-        metric = 'manhattan')
+            data[user_end_cells].obsm['X_diffmap'], 
+            data[mira_end_cells].obsm['X_diffmap']])
+        )
 
     adj = pd.DataFrame(np.exp(-dist_matrix**2/(2*np.mean(dist_matrix))) * (1-np.eye(n_cells)) * no_mira_connections_mask, 
                        columns = all_cells, index = all_cells)

@@ -10,7 +10,6 @@ def main(
     output_path,
     feature_type = 'ATAC',
     min_cells = 25,
-    peak_subset = None,
 ):
 
     adata = read_dynframe(dynframe_path)
@@ -20,7 +19,7 @@ def main(
     except IndexError:
         logging.warning('Cannot find feature type {}, assuming all features are {}.'.format(feature_type, feature_type))
 
-    adata = basic_atac_preprocessing(adata, min_cells, peak_subset = peak_subset)
+    adata = basic_atac_preprocessing(adata, min_cells)
 
     add_expression_to_dynframe(
         dynframe_path, 

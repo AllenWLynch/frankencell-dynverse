@@ -94,7 +94,7 @@ def get_mixable_cells(cluster_rds, read_depths, mixing_weights, rd_means, rd_std
 
         if not found_valid_cells:
             read_depths = [
-                rd if has_valid_cells else sample_bounded_read_depth(rd_mean, rd_std, 2.5, 10, np.zeros(10).astype(bool))[0]
+                sample_bounded_read_depth(rd_mean, rd_std, 2.5, 10, np.zeros(10).astype(bool))[0]
                 for rd, has_valid_cells, rd_mean, rd_std in zip(
                     read_depths, mode_has_valid_cells, rd_means, rd_stds
                 )
@@ -273,7 +273,7 @@ def mix_frankencells(*,
         {'feature_id' : np.arange(all_counts.shape[-1]).astype(str),
         'feature_type' : feature_type}
     )
-
+    print('here')
     add_expression_to_dynframe(output_path, output_path, feature_df, 
         counts = all_counts)
 

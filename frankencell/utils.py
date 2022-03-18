@@ -104,7 +104,7 @@ def add_expression_to_dynframe(dynframe, output_file, feature_df, expression = N
             expr_file+='.mtx'
         else:
             expr_file = None
-
+        
         featureinfo_file = os.path.join(folder, 'feature_info.csv')
         feature_df.to_csv(featureinfo_file, index = None)
 
@@ -133,6 +133,7 @@ if ({use_counts_file}) {{
 
 dataset <- dynwrap::add_expression(dataset, counts = counts, expression = expr,
                                    feature_info = feature_info)
+
 dynutils::write_h5(dataset, "{output_file}")
 
         '''.format(

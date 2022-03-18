@@ -162,7 +162,7 @@ rule make_test :
         TEST_PATH
     params : 
         args = TEST_CONFIG
-    threads : 10
+    threads : 1
     resources:
         local_mem = partial(scale_mem_mb, base_mem = 2000, thread_mem = 1000)
     conda:
