@@ -75,7 +75,7 @@ def tune_model(adata, model, save_name, tuning_args):
         cv = ShuffleSplit(n_splits= 5, train_size=train_size)
     if cv == 'cv':
         cv = 5
-
+    
     tuner = mira.topics.TopicModelTuner(
         model, save_name = save_name, cv = cv,
         **default_args

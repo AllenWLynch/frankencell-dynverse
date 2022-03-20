@@ -6,10 +6,7 @@ import pandas as pd
 
 def get_modified_F1_score(F1_output_path):
 
-    assignments = pd.read_csv(F1_output_path, sep = '\t')
-    
-    #print(assignments)
-    assignments = assignments.rename(
+    assignments = pd.read_csv(F1_output_path, sep = ' ').set_index('cell_id').rename(
         columns  = {'group_prediction' : 'prediction', 'group_dataset' : 'actual'}
     )
 
@@ -44,8 +41,6 @@ def get_modified_F1_score(F1_output_path):
                     if get_startnode(branch) == end_node:
                         potential_legs.append(branch)
                 
-
-                print(mappings, potential_legs, branch)
                 if len(potential_legs) > 0:
                     add_leg = assignments.groupby('actual').count().loc[potential_legs].sort_values('prediction').head(1).index.values[0]
                     mappings[branch] = mappings[add_leg]
@@ -71,6 +66,7 @@ def main(*, goldstandard, test_dataset, run_file, definition_file,
     rstring = '''
 
 library(tibble)
+library(tidyverse)
 
 goldstandard <- dynutils::read_h5("{goldstandard}")
 model <- dynutils::read_h5("{test_dataset}")
@@ -90,13 +86,13 @@ results <- dyneval::calculate_metrics(goldstandard, model,
 
 dynutils::write_h5(model, "{method_output_path}")
 
-groups_dataset <- goldstandard %>% dynwrap::simplify_trajectory() %>% dynwrap::group_onto_trajectory_edges()
-groups_prediction <- model %>% dynwrap::simplify_trajectory() %>% dynwrap::group_onto_trajectory_edges()
+groups_dataset <- goldstandard %>% dynwrap::group_onto_trajectory_edges()
+groups_prediction <- model %>% dynwrap::group_onto_trajectory_edges()
 groups_dataset <- groups_dataset %>% as.character() %>% enframe("cell_id", "group_dataset")
 groups_dataset_levels <- unique(groups_dataset$group_dataset) %>% na.omit()
 groups_prediction <- groups_prediction %>% as.character() %>% enframe("cell_id", "group_prediction")
 groups_prediction_levels <- unique(groups_prediction$group_prediction) %>% na.omit()
-groups <- dplyr::full_join(groups_dataset, groups_prediction, "cell_id")
+groups <- full_join(groups_dataset, groups_prediction, "cell_id")
 write.table(groups, "{F1_output_path}", sep = "\t")
 
 write.table(t(results), file = "{results_output_path}", 
@@ -119,7 +115,7 @@ write.table(t(results), file = "{results_output_path}",
     mod_f1_score = get_modified_F1_score(F1_output_path)
 
     with open(results_output_path, 'a') as f:
-        print('mod_F1_branches', mod_f1_score, file = f, sep = '\t')
+        print('mod_F1_branches', mod_f1_score, sep = '\t')
 
     os.remove(F1_output_path)
     

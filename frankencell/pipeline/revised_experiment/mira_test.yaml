@@ -49,7 +49,22 @@ preprocessing:
       train_style : fit
       use_atac_features : true
       use_rna_features : false
-      min_cells : 35
+      min_cells : 25
+  mira_RNA:
+    script : mira-preprocess
+    mem : 3000
+    parameters:
+      use_atac_features : false
+      train_style : tune
+      min_cells : 25
+  mira_ATAC:
+    script: mira-preprocess
+    mem : 3000
+    parameters : 
+      train_style : tune
+      use_atac_features : true
+      use_rna_features : false
+      min_cells : 25
 
 #____METHODS____
 default_method_parameters: {}
@@ -65,3 +80,9 @@ methods :
       mira_notune_ATAC:
         parameters: use_rep="ATAC", box_cox=0.25
         preprocessing: mira_notune_ATAC
+      mira_RNA :
+        parameters : use_rep="RNA", box_cox=0.25
+        preprocessing : mira_RNA
+      mira_ATAC :
+        parameters : use_rep="ATAC", box_cox=0.25
+        preprocessing : mira_ATAC
