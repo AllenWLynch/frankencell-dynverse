@@ -70,38 +70,35 @@ def tune_model(adata, model, save_name, tuning_args):
     train_size = default_args.pop('train_size')
     cv = default_args.pop('cv')
     top_n_trials = default_args.pop('top_n_trials')
+    iters = default_args.pop('iters')
 
     if cv == 'shufflesplit':
         cv = ShuffleSplit(n_splits= 5, train_size=train_size)
     if cv == 'cv':
         cv = 5
-
+    
     if os.path.isfile(save_name):
         study = mira.topics.TopicModelTuner.load_study(save_name)
 
         print('Resuming training from previously-saved tuner.')
+
+        iters = max(iters - len(study.trials), 0)
         tuner = mira.topics.TopicModelTuner(
-            model, study = study, cv = cv,
+            model, study = study, cv = cv, iters = iters,
             **default_args
         )
     else:
         tuner = mira.topics.TopicModelTuner(
-            model, save_name = save_name, cv = cv,
+            model, save_name = save_name, cv = cv, iters = iters,
             **default_args
         )
 
-    if top_n_trials == 1:
-        adata.obs[tuner.test_column] = False
-        adata.obs[tuner.test_column][np.random.choice(len(adata), size = 2)] = True
-    else:
-        tuner.train_test_split(adata, train_size= train_size)
+    tuner.train_test_split(adata, train_size= train_size)
 
-    tuner.tune(adata)
+    if iters > 0:
+        tuner.tune(adata)
 
-    if top_n_trials == 1:
-        best_model = model.set_params(**tuner.get_best_params(1)[0]).fit(adata)
-    else:
-        best_model = tuner.select_best_model(adata, top_n_trials=top_n_trials)
+    best_model = tuner.select_best_model(adata, top_n_trials=top_n_trials)
 
     return best_model
 
