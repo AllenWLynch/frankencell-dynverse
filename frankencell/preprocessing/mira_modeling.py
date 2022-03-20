@@ -75,11 +75,20 @@ def tune_model(adata, model, save_name, tuning_args):
         cv = ShuffleSplit(n_splits= 5, train_size=train_size)
     if cv == 'cv':
         cv = 5
-    
-    tuner = mira.topics.TopicModelTuner(
-        model, save_name = save_name, cv = cv,
-        **default_args
-    )
+
+    if os.path.isfile(save_name):
+        study = mira.topics.TopicModelTuner.load_study(save_name)
+
+        print('Resuming training from previously-saved tuner.')
+        tuner = mira.topics.TopicModelTuner(
+            model, study = study, cv = cv,
+            **default_args
+        )
+    else:
+        tuner = mira.topics.TopicModelTuner(
+            model, save_name = save_name, cv = cv,
+            **default_args
+        )
 
     if top_n_trials == 1:
         adata.obs[tuner.test_column] = False
