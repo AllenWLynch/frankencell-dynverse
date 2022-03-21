@@ -35,7 +35,7 @@ default_preprocessing_parameters:
   
 
 preprocessing:
-mira_load_joint : 
+  mira_load_joint : 
     script : mira-preprocess
     mem : 2000
     parameters:
