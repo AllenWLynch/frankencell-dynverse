@@ -77,7 +77,7 @@ def tune_model(adata, model, save_name, tuning_args):
     if cv == 'cv':
         cv = 5
     
-    if os.path.isfile(save_name):
+    if False: #os.path.isfile(save_name):
         study = mira.topics.TopicModelTuner.load_study(save_name)
 
         print('Resuming training from previously-saved tuner.')
