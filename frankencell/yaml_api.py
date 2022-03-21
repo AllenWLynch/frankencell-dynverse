@@ -4,6 +4,7 @@ from .mix_cells import mix_frankencells, read_datasets
 from .preprocessing.pca import main as pca_preprocessing
 from .preprocessing.lsi import main as lsi_preprocessing
 from .preprocessing.mira_modeling import main as mira_preprocessing
+from .preprocessing.joint_counts import main as joint_preprocessing
 from .evaluate_method import main as evaluate
 import yaml
 from yaml import Loader
@@ -32,6 +33,10 @@ pca_parser.set_defaults(func = pca_preprocessing)
 lsi_parser = subparsers.add_parser('lsi-preprocess')
 add_arguments(lsi_parser)
 lsi_parser.set_defaults(func = lsi_preprocessing)
+
+joint_parser = subparsers.add_parser('joint-preprocess')
+add_arguments(joint_parser)
+joint_parser.set_defaults(func = joint_preprocessing)
 
 mira_parser = subparsers.add_parser('mira-preprocess')
 add_arguments(mira_parser)

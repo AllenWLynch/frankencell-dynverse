@@ -16,6 +16,9 @@ from .preprocessing.lsi import add_arguments as lsi_add_arguments
 from .evaluate_method import main as evaluate
 from .evaluate_method import add_arguments as eval_add_arguments
 
+from .get_metrics import main as get_metrics
+from .get_metrics import add_arguments as metrics_add_arguments
+
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 subparsers = parser.add_subparsers(help = 'commands')
 
@@ -107,10 +110,21 @@ eval_add_arguments(evaluate_parser)
 evaluate_parser.set_defaults(func = run_evaluate)
 
 
+def run_get_metrics(args):
+
+    get_metrics(
+        goldstandard=args.truth_dataset,
+        test_dataset = args.test_dataset,
+        results_output_path= args.results_outfile,
+    )
+
+metrics_subparser = subparsers.add_parser('get-metrics')
+metrics_add_arguments(metrics_subparser)
+metrics_subparser.set_defaults(func = run_get_metrics)
+
+
 def main():
     #____ Execute commands ___
-    import sys
-    print(sys.argv)
 
     args = parser.parse_args()
 

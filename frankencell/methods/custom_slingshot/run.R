@@ -5,10 +5,10 @@ library(purrr)
 
 dataset <- dyncli::main()
 
+print(dataset$feature_info)
 priors <- dataset$priors
 parameters <- dataset$parameters
 expression <- dataset$expression
-
 
 start_id <- priors$start_id
 end_id <- priors$end_id
