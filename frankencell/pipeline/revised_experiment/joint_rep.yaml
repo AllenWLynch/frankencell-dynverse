@@ -1,0 +1,61 @@
+
+default_preprocessing_parameters: 
+  min_cells : 25
+  min_dispersion : 0.7
+  tuning_args:
+    min_topics : 5
+    min_epochs : 40
+    max_epochs : 60
+    max_dropout : 0.1
+    top_n_trials : 5
+    train_size : 0.9
+    cv : shufflesplit
+    batch_sizes : [32,64]
+  rna_model_args:
+    beta : 0.92
+    batch_size : 64
+    encoder_dropout : 0.05
+    num_topics : 7
+    decoder_dropout : 0.2
+    num_epochs : 45    
+    num_layers : 2
+    hidden : 64
+    seed : 2556
+  atac_model_args:
+    beta : 0.92
+    batch_size : 64
+    encoder_dropout : 0.05
+    num_topics : 7
+    decoder_dropout : 0.2
+    num_epochs : 45    
+    num_layers : 2
+    hidden : 64
+    embedding_size : 64
+    seed : 2556
+  
+
+preprocessing:
+mira_load_joint : 
+    script : mira-preprocess
+    mem : 2000
+    parameters:
+      use_atac_features : true
+      use_rna_features : true
+      train_style : load
+      rna_prefix : mira_RNA
+      atac_prefix : mira_ATAC
+
+#____METHODS____
+default_method_parameters: {}
+
+methods :
+  mira_tree:
+    run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/run
+    definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/mira/definition.yaml
+    trials:
+      mira_JOINT : 
+        parameters: use_rep="joint", box_cox = 0.25
+        preprocessing: mira_load_joint
+      mira_JOINT_CONSTRAINED :
+        parameters: use_rep="joint_constrained", box_cox = 0.25
+        preprocessing: mira_load_joint
