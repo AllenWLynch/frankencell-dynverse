@@ -1,4 +1,4 @@
-
+import pandas as pd
 from ..utils import read_dynframe, select_features, add_expression_to_dynframe
 from .basic_preprocessing import basic_atac_preprocessing, basic_rna_preprocessing
 import anndata
@@ -25,13 +25,17 @@ def main(
         X = divcol, layers = {'counts' : divcol},
         obs = rna_data.obs    
     )
+    print(divider)
 
     adata = anndata.concat([rna_data, divider, atac_data], axis = 1)
-
+    adata.obs = rna_data.obs
+    adata.var = pd.DataFrame(index = np.arange(adata.shape[-1]).astype(str))
+    
+    print(rna_data.shape, atac_data.shape, adata.shape)
     add_expression_to_dynframe(
         dynframe_path, 
         output_path,
-        adata.var.reset_index(), 
+        adata.var.reset_index().rename(columns = {'index' : 'feature_id'}), 
         counts = adata.layers['counts'], 
         expression = adata.X.copy()
     )

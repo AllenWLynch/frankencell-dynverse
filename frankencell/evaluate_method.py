@@ -21,7 +21,7 @@ def get_modified_F1_score(F1_output_path):
 
     leftout = set(assignments.actual).difference(set(actual_branches))
 
-    if len(leftout) > 0:
+    if len(leftout) > 1:
 
         def get_startnode(x):
             return x.split('-')[0]

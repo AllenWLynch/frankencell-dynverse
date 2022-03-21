@@ -14,12 +14,15 @@ start_id <- priors$start_id
 end_id <- priors$end_id
 dimred <- priors$dimred
 groups_id <- priors$groups_id
-ndim <- parameters$ndim
 
 divcol <- which(colSums(abs(data)) == 0)
+print(divcol)
 
 expression <- data[,1:(divcol-1)] 
-accessibility <- data[,(divcol+1):dim(data)[2]]
+accessibility <- accessibility[,(divcol+1):]
+
+print(dim(expression))
+print(dim(accessibility))
 
 RunTFIDF <- function(
   object,
@@ -172,24 +175,10 @@ optpoint <- ndim
 pca <- pca$x[, seq_len(optpoint)]
 rownames(pca) <- rownames(expression)
 
-L2Norm <- function(mat, MARGIN = 1){
-  normalized <- sweep(
-    x = mat,
-    MARGIN = MARGIN,
-    STATS = apply(
-      X = mat,
-      MARGIN = MARGIN,
-      FUN = function(x){
-        sqrt(x = sum(x ^ 2))
-      }
-    ),
-    FUN = "/"
-  )
-  normalized[!is.finite(x = normalized)] <- 0
-  return(normalized)
-}
 
-rd <- cbind(L2Norm(lsi), L2Norm(pca))
+print(dim(lsi))
+print(dim(pca))
+rd <- cbind(lsi, pca)
 print(dim(rd))
 
 #   ____________________________________________________________________________

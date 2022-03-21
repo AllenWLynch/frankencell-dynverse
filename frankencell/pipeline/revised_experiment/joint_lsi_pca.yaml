@@ -1,0 +1,21 @@
+default_preprocessing_parameters:
+  min_cells : 25
+  min_dispersion : 0.7
+
+preprocessing:
+  joint_lsi_pca:
+    script : joint-preprocess
+    mem : 2000
+    parameters: {}
+
+default_method_parameters: {}
+
+methods:
+  joint_lsi_pca:
+    run_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/joint_pca/run.R
+    definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/joint_pca/definition.yaml
+    trials:
+      joint_lsi_pca_signac_extended:
+        parameters: min_dim_lsi=5, min_dim_pca=4, style="signac"
+        preprocessing : joint_lsi_pca
+
