@@ -16,6 +16,6 @@ methods:
     definition_file : /liulab/alynch/projects/benchmarking/2022-02-08_experiment/frankencell-dynverse/frankencell/methods/joint_pca/definition.yaml
     trials:
       joint_lsi_pca_signac_extended:
-        parameters: min_dim_lsi=5, min_dim_pca=4, style="signac"
+        parameters: min_dim_lsi=4, min_dim_pca=3, style="signac"
         preprocessing : joint_lsi_pca
 

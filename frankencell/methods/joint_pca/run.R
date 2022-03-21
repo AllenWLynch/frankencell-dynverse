@@ -172,25 +172,11 @@ optpoint <- ndim
 pca <- pca$x[, seq_len(optpoint)]
 rownames(pca) <- rownames(expression)
 
-L2Norm <- function(mat, MARGIN = 1){
-  normalized <- sweep(
-    x = mat,
-    MARGIN = MARGIN,
-    STATS = apply(
-      X = mat,
-      MARGIN = MARGIN,
-      FUN = function(x){
-        sqrt(x = sum(x ^ 2))
-      }
-    ),
-    FUN = "/"
-  )
-  normalized[!is.finite(x = normalized)] <- 0
-  return(normalized)
-}
+embed.mean <- apply(X = pca, MARGIN = 2, FUN = mean)
+embed.sd <- apply(X = pca, MARGIN = 2, FUN = sd)
+pca <- t((t(pca) - embed.mean) / embed.sd)
 
-rd <- cbind(L2Norm(lsi), L2Norm(pca))
-print(dim(rd))
+rd <- cbind(lsi, pca)
 
 #   ____________________________________________________________________________
 #   Clustering                                                              ####
