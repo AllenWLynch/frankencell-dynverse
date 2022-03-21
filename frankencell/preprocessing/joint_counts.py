@@ -1,10 +1,9 @@
 
 from ..utils import read_dynframe, select_features, add_expression_to_dynframe
 from .basic_preprocessing import basic_atac_preprocessing, basic_rna_preprocessing
-import logging
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.decomposition import TruncatedSVD
 import anndata
+from scipy import sparse
+import numpy as np
 
 def main(
     dynframe_path,
@@ -21,7 +20,13 @@ def main(
     rna_data = select_features(adata, 'RNA')
     rna_data = basic_rna_preprocessing(rna_data, min_cells, min_dispersion=min_dispersion)
 
-    adata = anndata.concat(rna_data, atac_data, axis = 1)
+    divcol = sparse.csr_matrix(np.zeros((len(rna_data), 1)))
+    divider = anndata.AnnData(
+        X = divcol, layers = {'counts' : divcol},
+        obs = rna_data.obs    
+    )
+
+    adata = anndata.concat([rna_data, divider, atac_data], axis = 1)
 
     add_expression_to_dynframe(
         dynframe_path, 
@@ -30,6 +35,8 @@ def main(
         counts = adata.layers['counts'], 
         expression = adata.X.copy()
     )
+
+    return adata
 
 def add_arguments(parser):
 
