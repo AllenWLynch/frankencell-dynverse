@@ -1,11 +1,6 @@
 import argparse
 from .generate_cells import generate_frankentrajectory
 from .mix_cells import mix_frankencells, read_datasets
-from .preprocessing.pca import main as pca_preprocessing
-from .preprocessing.lsi import main as lsi_preprocessing
-from .preprocessing.mira_modeling import main as mira_preprocessing
-from .preprocessing.joint_counts import main as joint_preprocessing
-from .evaluate_method import main as evaluate
 import yaml
 from yaml import Loader
 import sys
@@ -25,26 +20,6 @@ mix_cells_subparser = subparsers.add_parser('mix-cells')
 add_arguments(mix_cells_subparser)
 mix_cells_subparser.add_argument('--n-jobs', '-j', type = int, default=1)
 mix_cells_subparser.set_defaults(func = mix_frankencells)
-
-pca_parser = subparsers.add_parser('pca-preprocess')
-add_arguments(pca_parser)
-pca_parser.set_defaults(func = pca_preprocessing)
-
-lsi_parser = subparsers.add_parser('lsi-preprocess')
-add_arguments(lsi_parser)
-lsi_parser.set_defaults(func = lsi_preprocessing)
-
-joint_parser = subparsers.add_parser('joint-preprocess')
-add_arguments(joint_parser)
-joint_parser.set_defaults(func = joint_preprocessing)
-
-mira_parser = subparsers.add_parser('mira-preprocess')
-add_arguments(mira_parser)
-mira_parser.set_defaults(func = mira_preprocessing)
-
-evaluate_parser = subparsers.add_parser('evaluate')
-add_arguments(evaluate_parser)
-evaluate_parser.set_defaults(func = evaluate)
 
 
 def main():

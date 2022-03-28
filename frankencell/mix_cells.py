@@ -273,7 +273,7 @@ def mix_frankencells(*,
         {'feature_id' : np.arange(all_counts.shape[-1]).astype(str),
         'feature_type' : feature_type}
     )
-    print('here')
+    #print('here')
     add_expression_to_dynframe(output_path, output_path, feature_df, 
         counts = all_counts)
 

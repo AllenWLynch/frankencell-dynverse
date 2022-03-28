@@ -87,9 +87,9 @@ def run_pipeline(*, snake_config, mem, snake_args, targets):
 
 def add_arguments(parser):
     parser.add_argument('config', type = argparse.FileType('r'), help = 'Test configuration file.')
-    parser.add_argument('--mem_mb', '-mem', required = True, type = int, help = 'Local memory available on your system. Changes how many concurrent jobs may run.')
+    parser.add_argument('--mem-mb', '-mem', required = True, type = int, help = 'Local memory available on your system. Changes how many concurrent jobs may run.')
     parser.add_argument('--restart', '-r', default = False, type = bool, help = 'Rerun the entire pipeline from the start.')
-    parser.add_argument('--snake_args', '-s', nargs = argparse.REMAINDER, help = 'arguments to pass to snakemake')
+    parser.add_argument('--snake-args', '-s', nargs = argparse.REMAINDER, help = 'arguments to pass to snakemake')
 
 def main(*, config, restart, mem, snake_args):
     

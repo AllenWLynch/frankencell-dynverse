@@ -3,26 +3,9 @@ import argparse
 import sys
 import yaml
 from yaml import Loader
-from .generate_cells import generate_frankentrajectory
-from .generate_cells import add_arguments as scaffold_add_arguments
+from frankencell.main import main as maketests
+from frankencell.main import add_arguments as maketests_add_arguments
 
-from .mix_cells import mix_frankencells, read_datasets
-from .mix_cells import add_arguments as mixer_add_arguments
-
-from .preprocessing.pca import main as pca_preprocessing
-from .preprocessing.pca import add_arguments as pca_add_arguments
-
-from .preprocessing.lsi import main as lsi_preprocessing
-from .preprocessing.lsi import add_arguments as lsi_add_arguments
-
-from .evaluate_method import main as evaluate
-from .evaluate_method import add_arguments as eval_add_arguments
-
-from .get_metrics import main as get_metrics
-from .get_metrics import add_arguments as metrics_add_arguments
-
-from .main import main as maketests
-from .main import add_arguments as maketests_add_arguments
 
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 subparsers = parser.add_subparsers(help = 'commands')
