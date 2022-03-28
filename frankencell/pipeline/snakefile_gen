@@ -1,0 +1,36 @@
+
+from functools import partial
+
+def scale_mem_mb(wildcards, threads, base_mem = 2000, thread_mem = 1000):
+    return base_mem + threads * thread_mem
+
+wildcard_constraints:
+    scaffold="\w+",
+    test="\w+",
+    rep="\d+"
+
+rule make_scaffold :
+    input : 
+        args = ancient(config['SCAFFOLD_CONFIG'] ) if not config['restart'] else config['SCAFFOLD_CONFIG'] 
+    output : 
+        config['SCAFFOLD_PATH']
+    resources:
+        local_mem = 500
+    shell : 
+        "./franken-cells-yaml scaffold {input.args}"
+
+rule make_test : 
+    input : 
+        config['SCAFFOLD_PATH']
+    output : 
+        config['TEST_PATH']
+    params : 
+        args = config['TEST_CONFIG']
+    threads : 1
+    resources:
+        local_mem = partial(scale_mem_mb, base_mem = 2000, thread_mem = 1000)
+    shell : 
+        "./franken-cells-yaml mix-cells {params.args} -j {threads}"
+
+
+ruleorder :  make_scaffold > make_test

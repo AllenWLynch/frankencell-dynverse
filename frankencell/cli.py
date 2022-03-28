@@ -1,6 +1,8 @@
 
 import argparse
 import sys
+import yaml
+from yaml import Loader
 from .generate_cells import generate_frankentrajectory
 from .generate_cells import add_arguments as scaffold_add_arguments
 
@@ -19,10 +21,28 @@ from .evaluate_method import add_arguments as eval_add_arguments
 from .get_metrics import main as get_metrics
 from .get_metrics import add_arguments as metrics_add_arguments
 
+from .main import main as maketests
+from .main import add_arguments as maketests_add_arguments
+
 parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
 subparsers = parser.add_subparsers(help = 'commands')
 
-def generate_scaffold(args):
+def maketests_wrapper(args):
+
+    config = yaml.load(args.config, Loader)
+
+    maketests(
+        config = config,
+        restart= args.restart,
+        mem = args.mem_mb,
+        snake_args=args.snake_args
+    )
+
+maketests_subparser = subparsers.add_parser('gen')
+maketests_add_arguments(maketests_subparser)
+maketests_subparser.set_defaults(func = maketests_wrapper)
+
+'''def generate_scaffold(args):
 
     generate_frankentrajectory(
         args.state_composition,
@@ -120,15 +140,13 @@ def run_get_metrics(args):
 
 metrics_subparser = subparsers.add_parser('get-metrics')
 metrics_add_arguments(metrics_subparser)
-metrics_subparser.set_defaults(func = run_get_metrics)
+metrics_subparser.set_defaults(func = run_get_metrics)'''
 
 
 def main():
     #____ Execute commands ___
 
     args = parser.parse_args()
-
-    print(args)
 
     try:
         args.func #first try accessing the .func attribute, which is empty if user tries ">>>lisa". In this case, don't throw error, display help!
