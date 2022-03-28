@@ -46,8 +46,10 @@ $ R
 
 To run the pipeline, make the following directorites:
 
+```
 $ mkdir data
 $ mkdir data/mira_benchmarking
+```
 
 Then go to [Zenodo](https://zenodo.org/record/6390740#.YkHgaO7MIUF) and download "startdata_rna.h5ad", "startdata_atac.h5ad", and "data_config.yaml". Place these three files in your working directory alongside the "franken-cells" script.
 
@@ -55,6 +57,8 @@ The command "franken-cells gen" starts a snakemake pipeline. Pass the path to "d
 After the "--snake-args" flag, every additional argument is passed directly to the [snakemake pipeline command-line executor](https://snakemake.readthedocs.io/en/stable/executing/cli.html). The command below runs a dry run of the 
 pipeline to make sure everything is set up correctly.
 
+```
 $ ./franken-cells gen data_config.yaml --mem-mb {your available mem here in MB} --restart False --snake-args --keep-going --cores {your available cores here} --rerun-incomplete -p -n
+```
 
 To execute the pipeline, remove the "-n" flag from the end of the above command.
